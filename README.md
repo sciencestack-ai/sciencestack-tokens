@@ -1,13 +1,13 @@
-# @sciencestack/tokens
+# @sciencestack-ai/tokens
 
 TypeScript types and node implementations for ScienceStack AST tokens.
 
 ## Installation
 
 ```bash
-npm install @sciencestack/tokens
+npm install @sciencestack-ai/tokens
 # or
-pnpm add @sciencestack/tokens
+pnpm add @sciencestack-ai/tokens
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ import {
   EquationToken,
   SectionToken,
   // ... and many more
-} from '@sciencestack/tokens';
+} from '@sciencestack-ai/tokens';
 
 // Use types for type safety
 const textToken: TextToken = {
