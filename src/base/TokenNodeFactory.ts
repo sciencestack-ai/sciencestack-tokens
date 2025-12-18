@@ -36,8 +36,8 @@ import {
   BibItemToken,
   EquationArrayToken,
   AuthorToken,
-  METADATA_TOKEN_TYPES
-} from '../types';
+  METADATA_TOKEN_TYPES,
+} from "../types";
 import {
   AbstractTokenNode,
   BaseTokenNode,
@@ -74,9 +74,9 @@ import {
   TitleTokenNode,
   BibitemTokenNode,
   EquationArrayTokenNode,
-  AuthorTokenNode
-} from '..';
-import { ITokenNodeFactory } from './ITokenNodeFactory';
+  AuthorTokenNode,
+} from "../index";
+import { ITokenNodeFactory } from "./ITokenNodeFactory";
 
 // Define metadata token types array
 
@@ -110,7 +110,11 @@ export class TokenNodeFactory implements ITokenNodeFactory {
         case TokenType.EQUATION:
           return new EquationTokenNode(token as EquationToken, id, this);
         case TokenType.EQUATION_ARRAY:
-          return new EquationArrayTokenNode(token as EquationArrayToken, id, this);
+          return new EquationArrayTokenNode(
+            token as EquationArrayToken,
+            id,
+            this
+          );
         case TokenType.CODE:
           return new CodeTokenNode(token as CodeToken, id, this);
         case TokenType.ALGORITHM:
@@ -148,7 +152,11 @@ export class TokenNodeFactory implements ITokenNodeFactory {
         case TokenType.SUBFIGURE:
           return new SubFigureTokenNode(token as SubFigureToken, id, this);
         case TokenType.INCLUDEGRAPHICS:
-          return new IncludeGraphicsTokenNode(token as IncludeGraphicsToken, id, this);
+          return new IncludeGraphicsTokenNode(
+            token as IncludeGraphicsToken,
+            id,
+            this
+          );
         case TokenType.INCLUDEPDF:
           return new IncludePdfTokenNode(token as IncludePdfToken, id, this);
         case TokenType.DIAGRAM:
