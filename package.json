@@ -1,6 +1,6 @@
 {
   "name": "@sciencestack-ai/tokens",
-  "version": "0.1.3",
+  "version": "0.1.8",
   "description": "TypeScript types and interfaces for ScienceStack AST tokens",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/fix-imports.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",

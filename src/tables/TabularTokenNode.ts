@@ -1,9 +1,15 @@
-import { BaseToken, TableCell, TabularToken, TokenType } from '../types';
-import { AbstractTokenNode, BaseTokenNode } from '../';
-import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, JSONExportOptions } from '../export_types';
+import { BaseToken, TableCell, TabularToken, TokenType } from "../types";
+import { AbstractTokenNode, BaseTokenNode } from "../index";
+import { ITokenNodeFactory } from "../base/ITokenNodeFactory";
+import {
+  CopyContentOptions,
+  LatexExportOptions,
+  MarkdownExportOptions,
+  JSONExportOptions,
+} from "../export_types";
 
-const createFixedArray = (length: number): boolean[] => new Array(length).fill(false);
+const createFixedArray = (length: number): boolean[] =>
+  new Array(length).fill(false);
 
 export class TabularTokenNode extends AbstractTokenNode {
   constructor(
@@ -24,7 +30,11 @@ export class TabularTokenNode extends AbstractTokenNode {
     const rows = token.content;
 
     rows.forEach((row, rowIndex) => {
-      const rowNode = new TableRowTokenNode(row, `${this.id}/row-${rowIndex}`, this.tokenFactory);
+      const rowNode = new TableRowTokenNode(
+        row,
+        `${this.id}/row-${rowIndex}`,
+        this.tokenFactory
+      );
       this.addChild(rowNode);
     });
 
@@ -33,7 +43,9 @@ export class TabularTokenNode extends AbstractTokenNode {
 
   private _postProcessRows() {
     const { rows, cols } = this.getRowCol();
-    let occupiedCells: boolean[][] = createFixedArray(rows).map(() => createFixedArray(cols));
+    let occupiedCells: boolean[][] = createFixedArray(rows).map(() =>
+      createFixedArray(cols)
+    );
 
     let emptyRowIndex = 0;
     let insertedRows = 0;
@@ -66,7 +78,10 @@ export class TabularTokenNode extends AbstractTokenNode {
 
         // Check if any of the cells this would occupy are already marked as occupied
         for (let i = 0; i < colspan; i++) {
-          if (currentCol + i < cols && occupiedCells[r + insertedRows][currentCol + i]) {
+          if (
+            currentCol + i < cols &&
+            occupiedCells[r + insertedRows][currentCol + i]
+          ) {
             needsEmptyRow = true;
             break;
           }
@@ -78,7 +93,11 @@ export class TabularTokenNode extends AbstractTokenNode {
 
       // If we found a conflict, insert an empty row and process this row again
       if (needsEmptyRow) {
-        const emptyRow = new TableRowTokenNode([], `${this.id}/emptyrow-${emptyRowIndex}`, this.tokenFactory);
+        const emptyRow = new TableRowTokenNode(
+          [],
+          `${this.id}/emptyrow-${emptyRowIndex}`,
+          this.tokenFactory
+        );
 
         // Insert the empty row before the current row
         this._children.splice(r + insertedRows, 0, emptyRow);
@@ -136,17 +155,17 @@ export class TabularTokenNode extends AbstractTokenNode {
 
   getCopyContent(options?: CopyContentOptions): string {
     const rows = this.getData();
-    return rows.map((row) => row.getCopyContent(options)).join('\n');
+    return rows.map((row) => row.getCopyContent(options)).join("\n");
   }
 
   getLatexContent(options?: LatexExportOptions): string {
-    let content = '';
+    let content = "";
     const rows = this.getData();
     const N = rows.length;
     rows.forEach((row, i) => {
       content += row.getLatexContent(options);
       if (i < N - 1) {
-        content += ' \\\\ \n';
+        content += " \\\\ \n";
       }
     });
 
@@ -162,9 +181,9 @@ export class TabularTokenNode extends AbstractTokenNode {
 
     // For now, implement simple GFM table (no rowspan/colspan support)
     // TODO: Add HTML table fallback for complex tables
-    if (rows.length === 0) return '';
+    if (rows.length === 0) return "";
 
-    let markdown = '';
+    let markdown = "";
     rows.forEach((row, index) => {
       const rowContent = row.getMarkdownContent(options).trim();
       if (rowContent.length === 0) return;
@@ -173,7 +192,7 @@ export class TabularTokenNode extends AbstractTokenNode {
       // Add header separator after first row
       if (index === 0) {
         const cellCount = row.getData().length;
-        const separator = Array(cellCount).fill('---').join(' | ');
+        const separator = Array(cellCount).fill("---").join(" | ");
         markdown += `| ${separator} |\n`;
       }
     });
@@ -183,11 +202,13 @@ export class TabularTokenNode extends AbstractTokenNode {
 
   getJSONContent(options?: JSONExportOptions): TabularToken {
     const rows = this.getData();
-    const content: TableCell[][] = rows.map((row) => row.getJSONContent(options));
+    const content: TableCell[][] = rows.map((row) =>
+      row.getJSONContent(options)
+    );
 
     return {
       ...this.token,
-      content
+      content,
     };
   }
 }
@@ -200,9 +221,9 @@ class TableRowTokenNode extends AbstractTokenNode {
   ) {
     // Wrap the row data in a dummy token.
     const dummyToken: BaseToken = {
-      type: 'table_row' as unknown as TokenType,
+      type: "table_row" as unknown as TokenType,
       id: id,
-      content: ''
+      content: "",
     };
     super(dummyToken, id);
 
@@ -216,7 +237,11 @@ class TableRowTokenNode extends AbstractTokenNode {
    */
   protected _initializeRow(row_cells: TableCell[]): void {
     row_cells.forEach((cell: TableCell, cellIndex: number) => {
-      const cellNode = new CellNode(cell, `${this.id}/cell-${cellIndex}`, this.tokenFactory);
+      const cellNode = new CellNode(
+        cell,
+        `${this.id}/cell-${cellIndex}`,
+        this.tokenFactory
+      );
       this.addChild(cellNode);
     });
   }
@@ -235,17 +260,17 @@ class TableRowTokenNode extends AbstractTokenNode {
 
   getCopyContent(options?: CopyContentOptions): string {
     const cells = this.getData();
-    return cells.map((cell) => cell.getCopyContent(options)).join(' ');
+    return cells.map((cell) => cell.getCopyContent(options)).join(" ");
   }
 
   getLatexContent(options?: LatexExportOptions): string {
-    let content = '';
+    let content = "";
     const cells = this.getData();
     const N = cells.length;
     cells.forEach((cell, i) => {
       content += cell.getLatexContent(options);
       if (i < N - 1) {
-        content += ' & ';
+        content += " & ";
       }
     });
 
@@ -262,7 +287,7 @@ class TableRowTokenNode extends AbstractTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const cells = this.getData();
-    return cells.map((cell) => cell.getMarkdownContent(options)).join(' | ');
+    return cells.map((cell) => cell.getMarkdownContent(options)).join(" | ");
   }
 
   getJSONContent(options?: JSONExportOptions): any {
@@ -271,7 +296,12 @@ class TableRowTokenNode extends AbstractTokenNode {
       rowspan: cell.rows,
       colspan: cell.cols,
       ...(cell.styles.length > 0 && { styles: cell.styles }),
-      content: cell.hasChildren() ? (AbstractTokenNode.GetJSONContent(cell.getChildren(), options) as BaseToken[]) : []
+      content: cell.hasChildren()
+        ? (AbstractTokenNode.GetJSONContent(
+            cell.getChildren(),
+            options
+          ) as BaseToken[])
+        : [],
     }));
   }
 }
@@ -291,9 +321,9 @@ class CellNode extends BaseTokenNode {
     protected tokenFactory?: ITokenNodeFactory
   ) {
     const dummyToken: BaseToken = {
-      type: 'cell' as unknown as TokenType,
+      type: "cell" as unknown as TokenType,
       id: id,
-      content: null
+      content: null,
     };
     super(dummyToken, id);
 
@@ -324,8 +354,8 @@ class CellNode extends BaseTokenNode {
     const styles = this.styles;
     if (styles) {
       for (const style of styles) {
-        if (style.startsWith('color=')) {
-          return style.split('=')[1];
+        if (style.startsWith("color=")) {
+          return style.split("=")[1];
         }
       }
     }
@@ -335,7 +365,7 @@ class CellNode extends BaseTokenNode {
   protected _initializeChildCells(tokens: BaseToken[]) {
     const factory = this.tokenFactory;
     if (!factory) {
-      console.error('No factory found');
+      console.error("No factory found");
       return;
     }
 
@@ -356,11 +386,11 @@ class CellNode extends BaseTokenNode {
     if (this.hasChildren()) {
       return super.getCopyContent(options).trim();
     }
-    return '';
+    return "";
   }
 
   getLatexContent(options?: LatexExportOptions): string {
-    let content = '';
+    let content = "";
     if (this.hasChildren()) {
       content = super.getLatexContent(options).trim();
       if (content.length > 1 && this.getChildren().length > 1) {
@@ -384,6 +414,6 @@ class CellNode extends BaseTokenNode {
     if (this.hasChildren()) {
       return super.getMarkdownContent(options).trim();
     }
-    return '';
+    return "";
   }
 }
