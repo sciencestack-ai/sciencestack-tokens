@@ -4,7 +4,7 @@
   "description": "TypeScript types and interfaces for ScienceStack AST tokens",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mrlooi/sciencestack-tokens.git"
+    "url": "git+https://github.com/sciencestack-ai/sciencestack-tokens.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,7 +37,7 @@
     "vitest": "^2.1.8"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "dependencies": {
     "nanoid": "^5.1.6"
