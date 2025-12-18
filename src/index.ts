@@ -8,12 +8,17 @@ export * from "./utils";
 export * from "./utils/arxiv";
 export * from "./utils/citationConverters";
 
+// Factory
+export { ITokenNodeFactory } from "./base/ITokenNodeFactory";
+export { TokenNodeFactory } from "./base/TokenNodeFactory";
+
 // Noderoles
 export { NodeRoles } from "./base/NodeRoles";
 
 // Base tokens
 export { AbstractTokenNode } from "./base/AbstractTokenNode";
 export { BaseTokenNode } from "./base/BaseTokenNode";
+export { BaseTableFigureTokenNode } from "./base/BaseTableFigureTokenNode";
 
 // Document tokens
 export { DocumentTokenNode } from "./document/DocumentTokenNode";
@@ -24,6 +29,7 @@ export { GroupTokenNode } from "./document/GroupTokenNode";
 export { MathEnvTokenNode } from "./document/MathEnvTokenNode";
 export { EnvironmentTokenNode } from "./document/EnvironmentTokenNode";
 export { AppendixTokenNode } from "./document/AppendixTokenNode";
+export { BaseEnvTokenNode } from "./document/BaseEnvTokenNode";
 
 // Technical tokens
 export { EquationTokenNode } from "./technical/EquationTokenNode";
@@ -41,6 +47,7 @@ export { CommandTokenNode } from "./technical/CommandTokenNode";
 // Content tokens
 export { TextTokenNode } from "./content/TextTokenNode";
 export { QuoteTokenNode } from "./content/QuoteTokenNode";
+export { CaptionTokenNode } from "./content/CaptionTokenNode";
 
 // References tokens
 export { CitationTokenNode } from "./references/CitationTokenNode";
@@ -56,7 +63,6 @@ export { ListItemTokenNode } from "./lists/ListItemTokenNode";
 export { TableTokenNode } from "./tables/TableTokenNode";
 export { SubTableTokenNode } from "./tables/SubTableTokenNode";
 export { TabularTokenNode } from "./tables/TabularTokenNode";
-export { CaptionTokenNode } from "./content/CaptionTokenNode";
 
 // Figures tokens
 export { FigureTokenNode } from "./figures/FigureTokenNode";
@@ -71,3 +77,6 @@ export { AuthorTokenNode } from "./metadata/AuthorTokenNode";
 
 // bibliography tokens
 export { BibitemTokenNode } from "./references/BibitemTokenNode";
+
+// Token processing
+export { processTokenNodes } from "./tokenProcessing";
