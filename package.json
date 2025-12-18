@@ -1,5 +1,5 @@
 {
-  "name": "@sciencestack/tokens",
+  "name": "@sciencestack-ai/tokens",
   "version": "0.1.0",
   "description": "TypeScript types and interfaces for ScienceStack AST tokens",
   "repository": {
