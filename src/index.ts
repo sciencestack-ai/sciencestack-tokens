@@ -80,6 +80,7 @@ export { AuthorTokenNode } from "./metadata/AuthorTokenNode";
 
 // bibliography tokens
 export { BibitemTokenNode } from "./references/BibitemTokenNode";
+export { BibliographyTokenNode } from "./references/BibliographyTokenNode";
 
 // Token processing
 export { processTokenNodes } from "./tokenProcessing";

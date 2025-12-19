@@ -344,6 +344,11 @@ export interface BibItemToken extends BaseToken {
   semanticScholar?: SemanticScholarCitation;
 }
 
+export interface BibliographyToken extends ContainerToken {
+  type: TokenType.BIBLIOGRAPHY;
+  content: BibItemToken[];
+}
+
 // key is cite_key
 export type Bibliography = { key: string; value: BibItemToken }[];
 

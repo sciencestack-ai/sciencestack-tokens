@@ -106,7 +106,7 @@ export const TOKEN_SCHEMA: Record<TokenType, TokenSchema> = {
   [TokenType.TABULAR]: {
     contentType: "TableCell[][]",
     description:
-      "Tabular data structure. 'content' contains rows of cells, each cell containing a list of tokens.",
+      "Tabular data structure. 'content' is a 2D array of TableCell objects (rows × columns). Each TableCell has: 'content' (BaseToken[]), optional 'styles' (string[]), optional 'colspan' (like \\multicolumn when > 1), and optional 'rowspan' (like \\multirow when > 1).",
   },
   [TokenType.CAPTION]: {
     contentType: "BaseToken[]",

@@ -34,6 +34,7 @@ import {
   AbstractToken,
   TitleToken,
   BibItemToken,
+  BibliographyToken,
   EquationArrayToken,
   AuthorToken,
   METADATA_TOKEN_TYPES,
@@ -73,6 +74,7 @@ import {
   AbstractSectionTokenNode,
   TitleTokenNode,
   BibitemTokenNode,
+  BibliographyTokenNode,
   EquationArrayTokenNode,
   AuthorTokenNode,
 } from "../index";
@@ -171,6 +173,8 @@ export class TokenNodeFactory implements ITokenNodeFactory {
           return new CommandTokenNode(token as CommandToken, id, this);
         case TokenType.BIBITEM:
           return new BibitemTokenNode(token as BibItemToken, id, this);
+        case TokenType.BIBLIOGRAPHY:
+          return new BibliographyTokenNode(token as BibliographyToken, id, this);
         default:
           console.warn(`Unhandled token type: ${token.type}`);
           return null;
