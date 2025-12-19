@@ -4,6 +4,9 @@ export * from "./export_types";
 export * from "./styles";
 export * from "./utils";
 
+// Export schema
+export * from "./schema";
+
 // Export utilities
 export * from "./utils/arxiv";
 export * from "./utils/citationConverters";

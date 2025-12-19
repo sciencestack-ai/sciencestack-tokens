@@ -1,71 +1,71 @@
 // Enum definitions
 export enum TokenType {
   // Document/Content Structure
-  DOCUMENT = 'document',
-  TITLE = 'title',
-  SECTION = 'section',
-  ABSTRACT = 'abstract',
-  APPENDIX = 'appendix',
-  COMMAND = 'command',
+  DOCUMENT = "document",
+  TITLE = "title",
+  SECTION = "section",
+  ABSTRACT = "abstract",
+  APPENDIX = "appendix",
+  COMMAND = "command",
 
   // Text
-  TEXT = 'text',
-  QUOTE = 'quote',
+  TEXT = "text",
+  QUOTE = "quote",
 
   // ENV related
-  ENVIRONMENT = 'environment',
-  MATH_ENV = 'math_env',
-  GROUP = 'group',
+  ENVIRONMENT = "environment",
+  MATH_ENV = "math_env",
+  GROUP = "group",
 
   // Tables & Figures
-  FIGURE = 'figure',
-  SUBFIGURE = 'subfigure',
-  TABLE = 'table',
-  SUBTABLE = 'subtable',
-  TABULAR = 'tabular',
-  CAPTION = 'caption',
+  FIGURE = "figure",
+  SUBFIGURE = "subfigure",
+  TABLE = "table",
+  SUBTABLE = "subtable",
+  TABULAR = "tabular",
+  CAPTION = "caption",
 
   // graphics
-  INCLUDEGRAPHICS = 'includegraphics',
-  INCLUDEPDF = 'includepdf',
-  DIAGRAM = 'diagram',
+  INCLUDEGRAPHICS = "includegraphics",
+  INCLUDEPDF = "includepdf",
+  DIAGRAM = "diagram",
 
   // Lists
-  LIST = 'list',
-  ITEM = 'item',
+  LIST = "list",
+  ITEM = "item",
 
   // Math & Technical
-  EQUATION = 'equation',
-  EQUATION_ARRAY = 'equation_array',
-  ROW = 'row', // for equation array
-  CODE = 'code',
-  ALGORITHM = 'algorithm',
-  ALGORITHMIC = 'algorithmic',
+  EQUATION = "equation",
+  EQUATION_ARRAY = "equation_array",
+  ROW = "row", // for equation array
+  CODE = "code",
+  ALGORITHM = "algorithm",
+  ALGORITHMIC = "algorithmic",
 
   // References & Links
-  CITATION = 'citation',
-  REF = 'ref',
-  URL = 'url',
-  FOOTNOTE = 'footnote',
+  CITATION = "citation",
+  REF = "ref",
+  URL = "url",
+  FOOTNOTE = "footnote",
 
   // Bibliography
-  BIBLIOGRAPHY = 'bibliography',
-  BIBITEM = 'bibitem',
+  BIBLIOGRAPHY = "bibliography",
+  BIBITEM = "bibitem",
 
   // Metadata
-  MAKETITLE = 'maketitle',
-  AUTHOR = 'author'
+  MAKETITLE = "maketitle",
+  AUTHOR = "author",
 }
 
 export enum DisplayType {
-  INLINE = 'inline',
-  BLOCK = 'block'
+  INLINE = "inline",
+  BLOCK = "block",
 }
 
 export enum ListType {
-  ENUMERATE = 'enumerate',
-  ITEMIZE = 'itemize',
-  DESCRIPTION = 'description'
+  ENUMERATE = "enumerate",
+  ITEMIZE = "itemize",
+  DESCRIPTION = "description",
 }
 
 // Base interfaces
@@ -81,7 +81,11 @@ export interface BaseToken extends IToken {
   anchorId?: string;
 }
 
-export interface QuoteToken extends BaseToken {
+interface ContainerToken extends BaseToken {
+  content: BaseToken[];
+}
+
+export interface QuoteToken extends ContainerToken {
   type: TokenType.QUOTE;
 }
 
@@ -90,28 +94,24 @@ export interface TextToken extends BaseToken {
   content: string;
 }
 
-export interface GroupToken extends BaseToken {
+export interface GroupToken extends ContainerToken {
   type: TokenType.GROUP;
-  content: BaseToken[];
 }
 
-export interface AbstractToken extends BaseToken {
+export interface AbstractToken extends ContainerToken {
   type: TokenType.ABSTRACT;
-  content: BaseToken[];
 }
 
-export interface AppendixToken extends BaseToken {
+export interface AppendixToken extends ContainerToken {
   type: TokenType.APPENDIX;
-  content: BaseToken[];
-  id: string;
 }
 
-export interface EnvironmentToken extends BaseToken {
+export interface EnvironmentToken extends ContainerToken {
   type: TokenType.ENVIRONMENT;
-  name?: string;
+  name: string;
 }
 
-export interface MathEnvToken extends BaseToken {
+export interface MathEnvToken extends ContainerToken {
   type: TokenType.MATH_ENV;
   name: string;
   numbering?: string;
@@ -120,29 +120,26 @@ export interface MathEnvToken extends BaseToken {
 }
 
 // Document structure interfaces
-export interface DocumentToken extends BaseToken {
+export interface DocumentToken extends ContainerToken {
   type: TokenType.DOCUMENT;
 }
 
-export interface TitleToken extends BaseToken {
+export interface TitleToken extends ContainerToken {
   type: TokenType.TITLE;
-  content: BaseToken[];
 }
 export const SECTION_LEVELS = {
-  1: 'section',
-  2: 'subsection',
-  3: 'subsubsection',
-  4: 'paragraph',
-  5: 'subparagraph'
+  1: "section",
+  2: "subsection",
+  3: "subsubsection",
+  4: "paragraph",
+  5: "subparagraph",
 } as const;
 
-export interface SectionToken extends Omit<BaseToken, 'content'> {
+export interface SectionToken extends ContainerToken {
   type: TokenType.SECTION;
   title: BaseToken[];
   level: number; // SECTION_LEVELS
   numbering?: string;
-  content: BaseToken[];
-  id: string;
 }
 
 // Math and equations
@@ -182,36 +179,34 @@ export interface TabularToken extends IToken {
   content: TableCell[][];
 }
 
-export interface FigureToken extends BaseToken {
+export interface FigureToken extends ContainerToken {
   type: TokenType.FIGURE;
   numbering?: string;
 }
 
-export interface SubFigureToken extends BaseToken {
+export interface SubFigureToken extends ContainerToken {
   type: TokenType.SUBFIGURE;
   numbering?: string;
 }
 
-export interface SubTableToken extends BaseToken {
+export interface SubTableToken extends ContainerToken {
   type: TokenType.SUBTABLE;
   numbering?: string;
 }
 
-export interface TableToken extends BaseToken {
+export interface TableToken extends ContainerToken {
   type: TokenType.TABLE;
   numbering?: string;
 }
 
-export interface CaptionToken extends BaseToken {
+export interface CaptionToken extends ContainerToken {
   type: TokenType.CAPTION;
-  content: BaseToken[];
   numbering?: string;
   counter_name?: string; // e.g. figure, table
 }
 
-export interface FootnoteToken extends BaseToken {
+export interface FootnoteToken extends ContainerToken {
   type: TokenType.FOOTNOTE;
-  content: BaseToken[];
 }
 
 // References and citations
@@ -241,9 +236,8 @@ export interface CodeToken extends BaseToken {
   display: DisplayType;
 }
 
-export interface AlgorithmToken extends BaseToken {
+export interface AlgorithmToken extends ContainerToken {
   type: TokenType.ALGORITHM;
-  content: BaseToken[];
   numbering?: string;
 }
 
@@ -253,12 +247,12 @@ export interface AlgorithmicToken extends BaseToken {
 }
 
 // Lists
-export interface ListItemToken extends BaseToken {
+export interface ListItemToken extends ContainerToken {
   type: TokenType.ITEM;
   title?: BaseToken[];
 }
 
-export interface ListToken extends BaseToken {
+export interface ListToken extends ContainerToken {
   type: TokenType.LIST;
   name: ListType;
   content: ListItemToken[];
@@ -273,40 +267,43 @@ export interface CommandToken extends BaseToken {
   opt_args?: BaseToken[];
 }
 
-export const METADATA_TOKEN_TYPES = ['email', 'affiliation', 'address', 'keywords', 'thanks'];
+export const METADATA_TOKEN_TYPES = [
+  "email",
+  "affiliation",
+  "address",
+  "keywords",
+  "thanks",
+];
 
 // Metadata
-export interface MakeTitleToken extends BaseToken {
+export interface MakeTitleToken extends ContainerToken {
   type: TokenType.MAKETITLE;
-  content: BaseToken[];
 }
 
-export interface MetadataToken extends BaseToken {
-  content: BaseToken[];
-}
+export interface MetadataToken extends ContainerToken {}
 
-export interface AuthorToken extends MetadataToken {
+export interface AuthorToken extends ContainerToken {
   type: TokenType.AUTHOR;
   content: BaseToken[]; // could be delimited by \and i.e. CommandToken['command'].lower()=='and'
 }
 
 export enum GraphicsErrorType {
   // File errors
-  FILE_NOT_FOUND = 'file_not_found',
+  FILE_NOT_FOUND = "file_not_found",
 
   // Processing errors
-  CONVERSION_FAILED = 'conversion_failed',
-  COMPILATION_FAILED = 'compilation_failed',
-  EXTRACTION_FAILED = 'extraction_failed',
+  CONVERSION_FAILED = "conversion_failed",
+  COMPILATION_FAILED = "compilation_failed",
+  EXTRACTION_FAILED = "extraction_failed",
 
   // Upload errors
-  UPLOAD_FAILED = 'upload_failed',
+  UPLOAD_FAILED = "upload_failed",
 
   // General errors
-  DIMENSION_ERROR = 'dimension_error',
-  PROCESSING_ERROR = 'processing_error',
+  DIMENSION_ERROR = "dimension_error",
+  PROCESSING_ERROR = "processing_error",
 
-  NOT_ENABLED = 'not_enabled'
+  NOT_ENABLED = "not_enabled",
 }
 
 interface BaseGraphicsToken extends BaseToken {
@@ -332,12 +329,12 @@ export interface DiagramToken extends BaseGraphicsToken {
 }
 
 export enum BibFormat {
-  BIBTEX = 'bibtex',
-  BIBITEM = 'bibitem'
+  BIBTEX = "bibtex",
+  BIBITEM = "bibitem",
 }
 
 // bibliography
-export interface BibItemToken extends IToken {
+export interface BibItemToken extends BaseToken {
   type: TokenType.BIBITEM;
   key: string; // cite_key
   format: BibFormat;
@@ -361,4 +358,7 @@ export type SemanticScholarCitation = {
 };
 
 // key is cite_key (linked to bibliography keys)
-export type SemanticScholarBibliography = Record<string, SemanticScholarCitation>;
+export type SemanticScholarBibliography = Record<
+  string,
+  SemanticScholarCitation
+>;
