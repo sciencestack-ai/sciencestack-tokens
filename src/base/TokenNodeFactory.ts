@@ -38,12 +38,14 @@ import {
   EquationArrayToken,
   AuthorToken,
   METADATA_TOKEN_TYPES,
+  MakeTitleToken,
 } from "../types";
 import {
   AbstractTokenNode,
   BaseTokenNode,
   SectionTokenNode,
   DocumentTokenNode,
+  MakeTitleTokenNode,
   EquationTokenNode,
   CodeTokenNode,
   AlgorithmTokenNode,
@@ -101,6 +103,8 @@ export class TokenNodeFactory implements ITokenNodeFactory {
       switch (token.type) {
         case TokenType.DOCUMENT:
           return new DocumentTokenNode(token as DocumentToken, id, this);
+        case TokenType.MAKETITLE:
+          return new MakeTitleTokenNode(token as MakeTitleToken, id, this);
         case TokenType.SECTION:
           return new SectionTokenNode(token as SectionToken, id, this);
         case TokenType.TITLE:
@@ -174,7 +178,11 @@ export class TokenNodeFactory implements ITokenNodeFactory {
         case TokenType.BIBITEM:
           return new BibitemTokenNode(token as BibItemToken, id, this);
         case TokenType.BIBLIOGRAPHY:
-          return new BibliographyTokenNode(token as BibliographyToken, id, this);
+          return new BibliographyTokenNode(
+            token as BibliographyToken,
+            id,
+            this
+          );
         default:
           console.warn(`Unhandled token type: ${token.type}`);
           return null;

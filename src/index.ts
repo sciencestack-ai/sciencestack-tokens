@@ -25,6 +25,7 @@ export { BaseTableFigureTokenNode } from "./base/BaseTableFigureTokenNode";
 
 // Document tokens
 export { DocumentTokenNode } from "./document/DocumentTokenNode";
+export { MakeTitleTokenNode } from "./document/MakeTitleTokenNode";
 export { TitleTokenNode } from "./document/TitleTokenNode";
 export { AbstractSectionTokenNode } from "./document/AbstractSectionTokenNode";
 export { SectionTokenNode } from "./document/SectionTokenNode";

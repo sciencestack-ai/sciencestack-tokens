@@ -278,6 +278,7 @@ export const METADATA_TOKEN_TYPES = [
 // Metadata
 export interface MakeTitleToken extends ContainerToken {
   type: TokenType.MAKETITLE;
+  // typically contains metadata tokens like title, author, date, etc
 }
 
 export interface MetadataToken extends ContainerToken {}
