@@ -1,6 +1,6 @@
 {
   "name": "@sciencestack-ai/tokens",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "TypeScript types and interfaces for ScienceStack AST tokens",
   "repository": {
     "type": "git",
