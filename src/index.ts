@@ -85,3 +85,6 @@ export { BibliographyTokenNode } from "./references/BibliographyTokenNode";
 
 // Token processing
 export { processTokenNodes } from "./tokenProcessing";
+
+// Exporter
+export { TokenExporter, ExportFormat, ExportOptions } from "./TokenExporter";
