@@ -1,9 +1,9 @@
-import { IncludeGraphicsToken } from '../types';
-import { BaseTokenNode } from '../base/BaseTokenNode';
-import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, resolveAssetPath } from '../export_types';
+import { IncludeGraphicsToken } from "../types";
+import { ITokenNodeFactory } from "../base/ITokenNodeFactory";
+import { LatexExportOptions, resolveAssetPath } from "../export_types";
+import { BaseAssetTokenNode } from "./BaseAssetTokenNode";
 
-export class IncludeGraphicsTokenNode extends BaseTokenNode {
+export class IncludeGraphicsTokenNode extends BaseAssetTokenNode<IncludeGraphicsToken> {
   constructor(
     token: IncludeGraphicsToken,
     id?: string,
@@ -12,45 +12,12 @@ export class IncludeGraphicsTokenNode extends BaseTokenNode {
     super(token, id, tokenFactory);
   }
 
-  get token(): IncludeGraphicsToken {
-    return this._token as IncludeGraphicsToken;
-  }
-
-  get width(): number {
-    return this.token.width ?? 0;
-  }
-
-  get height(): number {
-    return this.token.height ?? 0;
-  }
-
-  getPath() {
-    return this.token.path;
-  }
-
-  getError() {
-    return this.token.error;
-  }
-
-  getCopyContent(options?: CopyContentOptions): string {
-    return this.getPath() ?? '';
-  }
-
   getLatexContent(options?: LatexExportOptions): string {
     const path = this.getPath();
     if (!path) {
-      return '';
+      return "";
     }
     const resolvedPath = resolveAssetPath(path, options);
     return `\\includegraphics{${resolvedPath}}`;
-  }
-
-  getMarkdownContent(options?: MarkdownExportOptions): string {
-    const path = this.getPath();
-    if (!path) {
-      return '';
-    }
-    const resolvedPath = resolveAssetPath(path, options);
-    return `![ ](${resolvedPath})`;
   }
 }
