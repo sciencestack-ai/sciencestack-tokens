@@ -66,7 +66,10 @@ export { ListItemTokenNode } from "./lists/ListItemTokenNode";
 // Tables tokens
 export { TableTokenNode } from "./tables/TableTokenNode";
 export { SubTableTokenNode } from "./tables/SubTableTokenNode";
-export { TabularTokenNode } from "./tables/TabularTokenNode";
+export {
+  TabularTokenNode,
+  ResolvedTabularCell,
+} from "./tables/TabularTokenNode";
 
 // Figures tokens
 export { FigureTokenNode } from "./figures/FigureTokenNode";

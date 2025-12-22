@@ -11,6 +11,15 @@ import {
 const createFixedArray = (length: number): boolean[] =>
   new Array(length).fill(false);
 
+export type ResolvedTabularCell = {
+  cell: CellNode;
+  row: number;
+  col: number;
+  rowSpan: number;
+  colSpan: number;
+  isHeader: boolean;
+};
+
 export class TabularTokenNode extends AbstractTokenNode {
   constructor(
     token: TabularToken,
@@ -37,103 +46,6 @@ export class TabularTokenNode extends AbstractTokenNode {
       );
       this.addChild(rowNode);
     });
-
-    this._postProcessRows();
-  }
-
-  private _postProcessRows() {
-    const { rows, cols } = this.getRowCol();
-    let occupiedCells: boolean[][] = createFixedArray(rows).map(() =>
-      createFixedArray(cols)
-    );
-
-    let emptyRowIndex = 0;
-    let insertedRows = 0;
-
-    // First pass: process each row to find conflicts and mark occupied cells
-    for (let r = 0; r < this.rows; r++) {
-      const rowNode = this.getData()[r];
-      const cells = rowNode.getData();
-
-      // Ensure occupiedCells has enough rows
-      const requiredRows = r + insertedRows + 1;
-      while (occupiedCells.length < requiredRows) {
-        occupiedCells.push(createFixedArray(cols));
-      }
-
-      let currentCol = 0;
-      let needsEmptyRow = false;
-
-      // Check if any cell in this row conflicts with occupied cells
-      for (let c = 0; c < cells.length; c++) {
-        const cell = cells[c];
-
-        // Skip cells with empty data - they don't cause conflicts
-        if (!cell.hasChildren()) {
-          currentCol += cell.cols;
-          continue;
-        }
-
-        const colspan = cell.cols;
-
-        // Check if any of the cells this would occupy are already marked as occupied
-        for (let i = 0; i < colspan; i++) {
-          if (
-            currentCol + i < cols &&
-            occupiedCells[r + insertedRows][currentCol + i]
-          ) {
-            needsEmptyRow = true;
-            break;
-          }
-        }
-
-        if (needsEmptyRow) break;
-        currentCol += colspan;
-      }
-
-      // If we found a conflict, insert an empty row and process this row again
-      if (needsEmptyRow) {
-        const emptyRow = new TableRowTokenNode(
-          [],
-          `${this.id}/emptyrow-${emptyRowIndex}`,
-          this.tokenFactory
-        );
-
-        // Insert the empty row before the current row
-        this._children.splice(r + insertedRows, 0, emptyRow);
-        insertedRows++;
-        emptyRowIndex++;
-
-        // Reset and try again with the same row, but now it's pushed down
-        r--;
-        continue;
-      }
-
-      // No conflicts found, mark cells as occupied based on rowspan
-      currentCol = 0;
-      for (let c = 0; c < cells.length; c++) {
-        const cell = cells[c];
-        const rowspan = cell.rows;
-        const colspan = cell.cols;
-
-        // Ensure occupiedCells has enough rows for the rowspan
-        const maxRowNeeded = r + insertedRows + rowspan;
-        while (occupiedCells.length < maxRowNeeded) {
-          occupiedCells.push(createFixedArray(cols));
-        }
-
-        // Mark all cells this cell occupies as taken
-        for (let i = 0; i < rowspan; i++) {
-          for (let j = 0; j < colspan; j++) {
-            if (currentCol + j < cols) {
-              occupiedCells[r + insertedRows + i][currentCol + j] = true;
-            }
-          }
-        }
-
-        currentCol += colspan;
-      }
-    }
   }
 
   get rows() {
@@ -147,6 +59,76 @@ export class TabularTokenNode extends AbstractTokenNode {
       return Math.max(max, row.getTotalCols());
     }, 0);
     return { rows, cols: maxCols };
+  }
+
+  /**
+   * Returns a flat list of cells with their computed grid positions.
+   * Handles rowspan/colspan by tracking occupied cells.
+   * Useful for rendering without recomputing the grid layout.
+   */
+  getResolvedCells(): ResolvedTabularCell[] {
+    const { rows, cols } = this.getRowCol();
+    const rowNodes = this.getData();
+    const resolved: ResolvedTabularCell[] = [];
+
+    // Track occupied cells for rowspan handling
+    const occupiedCells: boolean[][] = [];
+    for (let r = 0; r < rows; r++) {
+      occupiedCells.push(createFixedArray(cols));
+    }
+
+    rowNodes.forEach((rowNode, rowIndex) => {
+      const cells = rowNode.getData();
+      const isHeader = rowIndex === 0;
+
+      // Handle null/empty rows - mark all as occupied
+      if (rowNode.isNullRow()) {
+        for (let c = 0; c < cols; c++) {
+          occupiedCells[rowIndex][c] = true;
+        }
+        return;
+      }
+
+      let currentColIndex = 0;
+
+      cells.forEach((cellNode) => {
+        // Skip occupied cells (from previous rowspans)
+        while (
+          currentColIndex < cols &&
+          occupiedCells[rowIndex][currentColIndex]
+        ) {
+          currentColIndex++;
+        }
+
+        const rowSpan = cellNode.rows;
+        const colSpan = cellNode.cols;
+
+        // Mark cells as occupied
+        for (let r = 0; r < rowSpan; r++) {
+          const targetRow = rowIndex + r;
+          if (targetRow < rows) {
+            for (let c = 0; c < colSpan; c++) {
+              if (currentColIndex + c < cols) {
+                occupiedCells[targetRow][currentColIndex + c] = true;
+              }
+            }
+          }
+        }
+
+        resolved.push({
+          cell: cellNode,
+          row: rowIndex,
+          col: currentColIndex,
+          rowSpan,
+          colSpan,
+          isHeader,
+        });
+
+        currentColIndex += colSpan;
+      });
+    });
+
+    return resolved;
   }
 
   getData(): TableRowTokenNode[] {
@@ -176,13 +158,30 @@ export class TabularTokenNode extends AbstractTokenNode {
     return null;
   }
 
+  /**
+   * Check if any cell has rowspan > 1 or colspan > 1
+   */
+  private hasComplexCells(): boolean {
+    for (const row of this.getData()) {
+      for (const cell of row.getData()) {
+        if (cell.rows > 1 || cell.cols > 1) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const rows = this.getData();
-
-    // For now, implement simple GFM table (no rowspan/colspan support)
-    // TODO: Add HTML table fallback for complex tables
     if (rows.length === 0) return "";
 
+    // Use HTML table for complex tables with rowspan/colspan
+    if (this.hasComplexCells()) {
+      return this.getMarkdownContentAsHtml(options);
+    }
+
+    // Simple GFM table
     let markdown = "";
     rows.forEach((row, index) => {
       const rowContent = row.getMarkdownContent(options).trim();
@@ -197,7 +196,56 @@ export class TabularTokenNode extends AbstractTokenNode {
       }
     });
 
-    return markdown;
+    return markdown + "\n";
+  }
+
+  /**
+   * Render table as HTML for markdown (supports rowspan/colspan)
+   */
+  private getMarkdownContentAsHtml(options?: MarkdownExportOptions): string {
+    const resolvedCells = this.getResolvedCells();
+    const { rows } = this.getRowCol();
+
+    // Group cells by row
+    const cellsByRow: Map<number, ResolvedTabularCell[]> = new Map();
+    for (let r = 0; r < rows; r++) {
+      cellsByRow.set(r, []);
+    }
+    for (const rc of resolvedCells) {
+      cellsByRow.get(rc.row)?.push(rc);
+    }
+
+    let html = "<table>\n";
+
+    for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
+      const rowCells = cellsByRow.get(rowIndex) || [];
+
+      // Empty row
+      if (rowCells.length === 0) {
+        html += "  <tr></tr>\n";
+        continue;
+      }
+
+      html += "  <tr>\n";
+
+      for (const { cell, rowSpan, colSpan, isHeader } of rowCells) {
+        const cellTag = isHeader ? "th" : "td";
+
+        // Build cell attributes
+        const attrs: string[] = [];
+        if (rowSpan > 1) attrs.push(`rowspan="${rowSpan}"`);
+        if (colSpan > 1) attrs.push(`colspan="${colSpan}"`);
+        const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+
+        const content = cell.getMarkdownContent(options);
+        html += `    <${cellTag}${attrStr}>${content}</${cellTag}>\n`;
+      }
+
+      html += "  </tr>\n";
+    }
+
+    html += "</table>\n";
+    return html;
   }
 
   getJSONContent(options?: JSONExportOptions): TabularToken {
