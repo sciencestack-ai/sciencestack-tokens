@@ -112,7 +112,7 @@ export class EquationTokenNode extends BaseTokenNode {
       const anchorId = this.getAnchorId();
       const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : "";
       // Block equation with $$ on their own lines
-      dataStr = `${anchor}$$\n${dataStr}\n$$\n`;
+      dataStr = `${anchor}$$\n${dataStr}\n$$\n\n`;
     }
 
     return dataStr;

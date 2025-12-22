@@ -125,7 +125,7 @@ export class EquationArrayTokenNode extends AbstractTokenNode {
       return outStr;
     }
 
-    return `$$\n${outStr.trim()}\n$$\n`;
+    return `\n$$\n${outStr.trim()}\n$$\n\n`;
   }
 
   getJSONContent(options?: JSONExportOptions): EquationArrayToken {
