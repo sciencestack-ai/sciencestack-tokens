@@ -92,18 +92,16 @@ export class TabularTokenNode extends AbstractTokenNode {
       let currentColIndex = 0;
 
       cells.forEach((cellNode) => {
-        // Skip occupied cells (from previous rowspans)
-        while (
-          currentColIndex < cols &&
-          occupiedCells[rowIndex][currentColIndex]
-        ) {
+        // Skip grid cells that have already been occupied
+        if (occupiedCells[rowIndex][currentColIndex]) {
           currentColIndex++;
+          return; // Skip this cell
         }
 
         const rowSpan = cellNode.rows;
         const colSpan = cellNode.cols;
 
-        // Mark cells as occupied
+        // Mark grid cells as occupied for merged cells
         for (let r = 0; r < rowSpan; r++) {
           const targetRow = rowIndex + r;
           if (targetRow < rows) {

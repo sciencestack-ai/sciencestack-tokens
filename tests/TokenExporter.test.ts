@@ -371,7 +371,10 @@ describe("TokenExporter", () => {
             },
             { content: [{ type: TokenType.TEXT, content: "B" }] },
           ],
-          [{ content: [{ type: TokenType.TEXT, content: "C" }] }],
+          [
+            { content: [] }, // placeholder for rowspan
+            { content: [{ type: TokenType.TEXT, content: "C" }] },
+          ],
         ],
       };
       const node = factory.createNode(token)!;
@@ -379,6 +382,27 @@ describe("TokenExporter", () => {
 
       expect(result).toContain("<table>");
       expect(result).toContain('rowspan="2"');
+      expect(result).toContain("<td>C</td>");
+      // Placeholder should be skipped, not rendered
+      expect(result).not.toContain("<td></td>");
+    });
+
+    it("should render actual empty cells (not placeholders)", () => {
+      const token = {
+        type: TokenType.TABULAR,
+        content: [
+          [
+            { content: [{ type: TokenType.TEXT, content: "A" }] },
+            { content: [] }, // actual empty cell, not a placeholder
+            { content: [{ type: TokenType.TEXT, content: "C" }] },
+          ],
+        ],
+      };
+      const node = factory.createNode(token)!;
+      const result = node.getMarkdownContent();
+
+      // Simple table without rowspan/colspan uses GFM
+      expect(result).toContain("| A |  | C |");
     });
 
     it("getResolvedCells should return cells with computed positions", () => {
@@ -413,6 +437,7 @@ describe("TokenExporter", () => {
     });
 
     it("getResolvedCells should handle rowspan correctly", () => {
+      // Backend produces placeholder cells for occupied positions
       const token = {
         type: TokenType.TABULAR,
         content: [
@@ -420,12 +445,16 @@ describe("TokenExporter", () => {
             { content: [{ type: TokenType.TEXT, content: "A" }], rowspan: 2 },
             { content: [{ type: TokenType.TEXT, content: "B" }] },
           ],
-          [{ content: [{ type: TokenType.TEXT, content: "C" }] }],
+          [
+            { content: [] }, // placeholder for rowspan
+            { content: [{ type: TokenType.TEXT, content: "C" }] },
+          ],
         ],
       };
       const node = factory.createNode(token) as TabularTokenNode;
       const resolved = node.getResolvedCells();
 
+      // Placeholder is skipped, so we get 3 cells
       expect(resolved).toHaveLength(3);
 
       // First row
@@ -436,7 +465,7 @@ describe("TokenExporter", () => {
       expect(resolved[1].row).toBe(0);
       expect(resolved[1].col).toBe(1);
 
-      // Second row - C should be at col 1 (col 0 occupied by rowspan)
+      // Second row - C at col 1 (placeholder at col 0 was skipped)
       expect(resolved[2].row).toBe(1);
       expect(resolved[2].col).toBe(1);
     });
