@@ -1,10 +1,10 @@
-import { CaptionToken, TokenType } from '../types';
-import { BaseTokenNode } from '../base/BaseTokenNode';
-import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
-import { BaseTableFigureTokenNode } from '../base/BaseTableFigureTokenNode';
-import { CopyContentOptions, LatexExportOptions } from '../export_types';
-import { AbstractTokenNode } from '../base/AbstractTokenNode';
-import { NodeRoles } from '../base/NodeRoles';
+import { CaptionToken, TokenType } from "../types";
+import { BaseTokenNode } from "../base/BaseTokenNode";
+import { ITokenNodeFactory } from "../base/ITokenNodeFactory";
+import { BaseTableFigureTokenNode } from "../base/BaseTableFigureTokenNode";
+import { CopyContentOptions, LatexExportOptions } from "../export_types";
+import { AbstractTokenNode } from "../base/AbstractTokenNode";
+import { NodeRoles } from "../base/NodeRoles";
 
 export class CaptionTokenNode extends BaseTokenNode {
   constructor(
@@ -36,12 +36,12 @@ export class CaptionTokenNode extends BaseTokenNode {
 
   getCopyContent(options?: CopyContentOptions): string {
     const content = super.getCopyContent(options);
-    return content + '\n';
+    return content + "\n";
   }
 
   getLatexContent(options?: LatexExportOptions): string {
     const content = super.getLatexContent(options);
-    return `\\caption{${content}}`;
+    return `\\caption{${content}}\n`;
   }
 
   getParentFigureOrTable(): BaseTableFigureTokenNode | null {
@@ -58,12 +58,14 @@ export class CaptionTokenNode extends BaseTokenNode {
   isParentSubContainer(): boolean {
     const parent = this.getParentFigureOrTable();
     if (!parent) return false;
-    return parent.type === TokenType.SUBTABLE || parent.type === TokenType.SUBFIGURE;
+    return (
+      parent.type === TokenType.SUBTABLE || parent.type === TokenType.SUBFIGURE
+    );
   }
 
   getMarkdownContent(options?: any): string {
     const content = super.getMarkdownContent(options);
-    return `Caption: *${content}*`;
+    return `Caption: *${content}*\n`;
   }
 
   getFullNumbering(): string | null {
@@ -76,7 +78,7 @@ export class CaptionTokenNode extends BaseTokenNode {
       (node) => node instanceof BaseTableFigureTokenNode
     ) as BaseTableFigureTokenNode | null;
     if (!topParent || !topParent.numbering) return this.numbering;
-    return topParent.numbering + '.' + this.numbering;
+    return topParent.numbering + "." + this.numbering;
   }
 
   getReferenceText(): string | null {

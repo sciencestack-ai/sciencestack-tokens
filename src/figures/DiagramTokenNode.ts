@@ -1,7 +1,7 @@
 import { DiagramToken } from '../types';
 import { BaseTokenNode } from '../base/BaseTokenNode';
 import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, getAssetRelativePath } from '../export_types';
+import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, resolveAssetPath } from '../export_types';
 
 export class DiagramTokenNode extends BaseTokenNode {
   constructor(
@@ -52,15 +52,15 @@ export class DiagramTokenNode extends BaseTokenNode {
     if (!path) {
       return '';
     }
-    const relativePath = getAssetRelativePath(path, options?.paperId, options?.assetsFolderName);
+    const resolvedPath = resolveAssetPath(path, options);
     comment = '\n% Alternatively use path: \n% ';
 
     // Check if the file is an SVG and use appropriate command
-    if (relativePath.toLowerCase().endsWith('.svg')) {
-      const pathWithoutExt = relativePath.replace(/\.svg$/i, '');
+    if (resolvedPath.toLowerCase().endsWith('.svg')) {
+      const pathWithoutExt = resolvedPath.replace(/\.svg$/i, '');
       comment += `\\includesvg{${pathWithoutExt}}\n`;
     } else {
-      comment += `\\includegraphics{${relativePath}}\n`;
+      comment += `\\includegraphics{${resolvedPath}}\n`;
     }
     return comment + this.getCode();
   }
@@ -71,7 +71,7 @@ export class DiagramTokenNode extends BaseTokenNode {
       return '';
     }
 
-    const relativePath = getAssetRelativePath(path, options?.paperId, options?.assetsFolderName);
-    return `![ ](${relativePath})`;
+    const resolvedPath = resolveAssetPath(path, options);
+    return `![ ](${resolvedPath})`;
   }
 }

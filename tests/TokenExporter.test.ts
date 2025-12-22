@@ -244,4 +244,33 @@ describe('TokenExporter', () => {
       expect(TokenExporter.toLatex(nodes)).toBe('snake\\_case');
     });
   });
+
+  describe('assetPathResolver', () => {
+    it('should resolve asset paths with custom resolver', () => {
+      const token = {
+        type: TokenType.INCLUDEGRAPHICS,
+        path: 'papers/123/figs/image.png',
+        content: null
+      };
+      const node = factory.createNode(token)!;
+
+      const result = node.getMarkdownContent({
+        assetPathResolver: (path) => `https://cdn.example.com/${path}`
+      });
+
+      expect(result).toBe('![ ](https://cdn.example.com/papers/123/figs/image.png)');
+    });
+
+    it('should return path as-is without resolver', () => {
+      const token = {
+        type: TokenType.INCLUDEGRAPHICS,
+        path: 'figs/image.png',
+        content: null
+      };
+      const node = factory.createNode(token)!;
+
+      const result = node.getMarkdownContent();
+      expect(result).toBe('![ ](figs/image.png)');
+    });
+  });
 });

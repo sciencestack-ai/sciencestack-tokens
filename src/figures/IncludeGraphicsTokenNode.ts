@@ -1,7 +1,7 @@
 import { IncludeGraphicsToken } from '../types';
 import { BaseTokenNode } from '../base/BaseTokenNode';
 import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, getAssetRelativePath } from '../export_types';
+import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, resolveAssetPath } from '../export_types';
 
 export class IncludeGraphicsTokenNode extends BaseTokenNode {
   constructor(
@@ -41,8 +41,8 @@ export class IncludeGraphicsTokenNode extends BaseTokenNode {
     if (!path) {
       return '';
     }
-    const relativePath = getAssetRelativePath(path, options?.paperId, options?.assetsFolderName);
-    return `\\includegraphics{${relativePath}}`;
+    const resolvedPath = resolveAssetPath(path, options);
+    return `\\includegraphics{${resolvedPath}}`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
@@ -50,7 +50,7 @@ export class IncludeGraphicsTokenNode extends BaseTokenNode {
     if (!path) {
       return '';
     }
-    const relativePath = getAssetRelativePath(path, options?.paperId, options?.assetsFolderName);
-    return `![ ](${relativePath})`;
+    const resolvedPath = resolveAssetPath(path, options);
+    return `![ ](${resolvedPath})`;
   }
 }

@@ -1,7 +1,7 @@
 import { IncludePdfToken } from '../types';
 import { BaseTokenNode } from '../base/BaseTokenNode';
 import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, getAssetRelativePath } from '../export_types';
+import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, resolveAssetPath } from '../export_types';
 
 export class IncludePdfTokenNode extends BaseTokenNode {
   constructor(
@@ -33,8 +33,8 @@ export class IncludePdfTokenNode extends BaseTokenNode {
     if (!path) {
       return '';
     }
-    const relativePath = getAssetRelativePath(path, options?.paperId, options?.assetsFolderName);
-    return `\\includepdf{${relativePath}}`;
+    const resolvedPath = resolveAssetPath(path, options);
+    return `\\includepdf{${resolvedPath}}`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
@@ -42,7 +42,7 @@ export class IncludePdfTokenNode extends BaseTokenNode {
     if (!path) {
       return '';
     }
-    const relativePath = getAssetRelativePath(path, options?.paperId, options?.assetsFolderName);
-    return `![ ](${relativePath})`;
+    const resolvedPath = resolveAssetPath(path, options);
+    return `![ ](${resolvedPath})`;
   }
 }
