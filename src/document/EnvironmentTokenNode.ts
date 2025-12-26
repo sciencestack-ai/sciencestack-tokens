@@ -25,8 +25,9 @@ export class EnvironmentTokenNode extends BaseTokenNode {
     const prefix = `\\begin{${env_name}}`;
     const suffix = `\\end{${env_name}}`;
 
+    const labels = this.getLabelsLatex();
     const content = super.getLatexContent(options);
 
-    return `${prefix}\n${content}\n${suffix}\n`;
+    return `${prefix}\n${labels}${content}\n${suffix}\n`;
   }
 }

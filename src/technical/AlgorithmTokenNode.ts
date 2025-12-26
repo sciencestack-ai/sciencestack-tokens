@@ -22,7 +22,8 @@ export class AlgorithmTokenNode extends BaseTokenNode {
 
   getLatexContent(options?: LatexExportOptions): string {
     const content = super.getLatexContent(options);
-    return `\\begin{algorithm}\n${content}\n\\end{algorithm}\n`;
+    const labels = this.getLabelsLatex();
+    return `\\begin{algorithm}\n${labels}${content}\n\\end{algorithm}\n`;
   }
 
   getReferenceText(): string {
@@ -61,7 +62,8 @@ export class AlgorithmicTokenNode extends BaseTokenNode {
   }
 
   getLatexContent(options?: LatexExportOptions): string {
-    return `\\begin{algorithmic}\n${this.getData()}\n\\end{algorithmic}\n`;
+    const labels = this.getLabelsLatex();
+    return `\\begin{algorithmic}\n${labels}${this.getData()}\n\\end{algorithmic}\n`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

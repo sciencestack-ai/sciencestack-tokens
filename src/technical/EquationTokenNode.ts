@@ -51,11 +51,13 @@ export class EquationTokenNode extends BaseTokenNode {
       return `$${dataStr}$`;
     }
 
+    const labels = this.getLabelsLatex();
+
     if (this.token.numbering) {
-      return `\\begin{equation}\n${dataStr}\n\\end{equation}\n`;
+      return `\\begin{equation}\n${labels}${dataStr}\n\\end{equation}\n`;
     }
 
-    return `$$\n${dataStr}\n$$\n`;
+    return `$$\n${labels}${dataStr}\n$$\n`;
   }
 
   getTooltipContent(): string | null {

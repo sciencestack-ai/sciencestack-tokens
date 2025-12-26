@@ -49,9 +49,10 @@ export class ListTokenNode extends BaseTokenNode {
     const prefix = `\\begin{${this.listType}}`;
     const suffix = `\\end{${this.listType}}`;
 
+    const labels = this.isInline ? "" : this.getLabelsLatex();
     const content = super.getLatexContent(options);
 
-    return `${prefix}\n${content}\n${suffix}\n`;
+    return `${prefix}\n${labels}${content}\n${suffix}\n`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

@@ -17,9 +17,10 @@ export class AbstractSectionTokenNode extends BaseEnvTokenNode {
   }
 
   getLatexContent(options?: LatexExportOptions): string {
+    const labels = this.getLabelsLatex();
     const content = super.getLatexContent(options);
 
-    return `\\begin{abstract}\n${content}\n\\end{abstract}`;
+    return `\\begin{abstract}\n${labels}${content}\n\\end{abstract}`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

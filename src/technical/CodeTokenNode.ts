@@ -33,7 +33,8 @@ export class CodeTokenNode extends BaseTokenNode {
     if (this.isInline) {
       return `\\verb|${this.getData()}|`;
     }
-    return `\\begin{lstlisting}[${this.title}]\n${this.getData()}\n\\end{lstlisting}\n`;
+    const labels = this.getLabelsLatex();
+    return `\\begin{lstlisting}[${this.title}]\n${labels}${this.getData()}\n\\end{lstlisting}\n`;
   }
 
   get isInline(): boolean {

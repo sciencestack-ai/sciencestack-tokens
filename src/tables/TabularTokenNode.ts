@@ -149,7 +149,8 @@ export class TabularTokenNode extends AbstractTokenNode {
       }
     });
 
-    return `\\begin{tabular}\n${content}\n\\end{tabular}\n`;
+    const labels = this.getLabelsLatex();
+    return `\\begin{tabular}\n${labels}${content}\n\\end{tabular}\n`;
   }
 
   getTooltipContent() {

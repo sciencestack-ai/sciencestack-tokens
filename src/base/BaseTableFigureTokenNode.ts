@@ -67,7 +67,8 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
   getLatexContent(options?: LatexExportOptions): string {
     const content = super.getLatexContent(options).trim();
     const envName = this.getEnvironmentName().toLowerCase();
-    return `\\begin{${envName}}\n${content}\n\\end{${envName}}\n`;
+    const labels = this.getLabelsLatex();
+    return `\\begin{${envName}}\n${labels}${content}\n\\end{${envName}}\n`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

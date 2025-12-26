@@ -20,9 +20,10 @@ export class QuoteTokenNode extends BaseTokenNode {
 
   getLatexContent(options?: LatexExportOptions): string {
     const content = super.getLatexContent(options);
+    const labels = this.getLabelsLatex();
     const prefix = '\\begin{quote}';
     const suffix = '\\end{quote}';
-    return `${prefix}\n${content}\n${suffix}\n`;
+    return `${prefix}\n${labels}${content}\n${suffix}\n`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

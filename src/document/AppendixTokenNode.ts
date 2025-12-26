@@ -13,8 +13,9 @@ export class AppendixTokenNode extends BaseTokenNode {
   }
 
   getLatexContent(options?: LatexExportOptions): string {
+    const labels = this.getLabelsLatex();
     const content = super.getLatexContent(options);
-    return `\\begin{appendices}\n${content}\n\\end{appendices}\n`;
+    return `\\begin{appendices}\n${labels}${content}\n\\end{appendices}\n`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

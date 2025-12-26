@@ -299,4 +299,13 @@ export abstract class AbstractTokenNode {
   getReferenceText(): string | null {
     return null;
   }
+
+  /**
+   * Returns LaTeX \label{...} commands for all labels on this node.
+   * Used by block-level token nodes in their getLatexContent() methods.
+   */
+  getLabelsLatex(): string {
+    if (this.labels.length === 0) return "";
+    return this.labels.map((label) => `\\label{${label}}`).join("\n") + "\n";
+  }
 }

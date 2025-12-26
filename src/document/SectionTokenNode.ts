@@ -48,9 +48,10 @@ export class SectionTokenNode extends BaseEnvTokenNode {
       prefix += "{}";
     }
 
+    const labels = this.getLabelsLatex();
     const content = super.getLatexContent(options);
 
-    return `${prefix}\n${content}\n`;
+    return `${prefix}\n${labels}${content}\n`;
   }
 
   getAnchorId(prefix = "sec") {

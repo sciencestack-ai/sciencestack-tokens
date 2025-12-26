@@ -65,7 +65,7 @@ export class MathEnvTokenNode extends BaseEnvTokenNode {
   }
 
   get name() {
-    return this.token.name;
+    return this.token.name ?? "theorem";
   }
 
   getName() {
@@ -82,9 +82,10 @@ export class MathEnvTokenNode extends BaseEnvTokenNode {
     }
     const suffix = `\\end{${name}}`;
 
+    const labels = this.getLabelsLatex();
     const content = super.getLatexContent(options);
 
-    return `${prefix}\n${content}\n${suffix}\n`;
+    return `${prefix}\n${labels}${content}\n${suffix}\n`;
   }
 
   getTooltipContent() {

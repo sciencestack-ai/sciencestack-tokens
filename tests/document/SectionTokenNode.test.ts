@@ -107,6 +107,36 @@ describe("SectionTokenNode", () => {
       const latex = node.getLatexContent();
       expect(latex).toContain("\\section{}");
     });
+
+    it("should include labels in LaTeX export", () => {
+      const token = {
+        type: TokenType.SECTION,
+        level: 1,
+        content: [{ type: TokenType.TEXT, content: "Content" }],
+        title: [{ type: TokenType.TEXT, content: "Introduction" }],
+        labels: ["sec:intro"],
+      };
+      const node = factory.createNode(token) as SectionTokenNode;
+
+      const latex = node.getLatexContent();
+      expect(latex).toContain("\\section{Introduction}");
+      expect(latex).toContain("\\label{sec:intro}");
+    });
+
+    it("should include multiple labels in LaTeX export", () => {
+      const token = {
+        type: TokenType.SECTION,
+        level: 1,
+        content: [],
+        title: [{ type: TokenType.TEXT, content: "Methods" }],
+        labels: ["sec:methods", "sec:methodology"],
+      };
+      const node = factory.createNode(token) as SectionTokenNode;
+
+      const latex = node.getLatexContent();
+      expect(latex).toContain("\\label{sec:methods}");
+      expect(latex).toContain("\\label{sec:methodology}");
+    });
   });
 
   describe("Markdown export", () => {

@@ -13,8 +13,9 @@ export class DocumentTokenNode extends BaseTokenNode {
   }
 
   getLatexContent(options: LatexExportOptions): string {
+    const labels = this.getLabelsLatex();
     const content = super.getLatexContent(options);
-    return `\\begin{document}\n${content}\n\\end{document}\n`;
+    return `\\begin{document}\n${labels}${content}\n\\end{document}\n`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

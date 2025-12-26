@@ -148,4 +148,50 @@ describe("EquationTokenNode", () => {
       expect(node.getReferenceText()).toBeNull();
     });
   });
+
+  describe("Label export", () => {
+    it("should include labels in block equation LaTeX export", () => {
+      const token = {
+        type: TokenType.EQUATION,
+        content: "E = mc^2",
+        display: DisplayType.BLOCK,
+        labels: ["eq:einstein"],
+      };
+      const node = factory.createNode(token) as EquationTokenNode;
+
+      const latex = node.getLatexContent();
+      expect(latex).toContain("\\label{eq:einstein}");
+      expect(latex).toContain("E = mc^2");
+    });
+
+    it("should include labels in numbered equation LaTeX export", () => {
+      const token = {
+        type: TokenType.EQUATION,
+        content: "a^2 + b^2 = c^2",
+        display: DisplayType.BLOCK,
+        numbering: "1",
+        labels: ["eq:pythagoras"],
+      };
+      const node = factory.createNode(token) as EquationTokenNode;
+
+      const latex = node.getLatexContent();
+      expect(latex).toContain("\\begin{equation}");
+      expect(latex).toContain("\\label{eq:pythagoras}");
+      expect(latex).toContain("\\end{equation}");
+    });
+
+    it("should not include labels for inline equations", () => {
+      const token = {
+        type: TokenType.EQUATION,
+        content: "x = y",
+        display: DisplayType.INLINE,
+        labels: ["eq:inline"],
+      };
+      const node = factory.createNode(token) as EquationTokenNode;
+
+      const latex = node.getLatexContent();
+      expect(latex).not.toContain("\\label");
+      expect(latex).toBe("$x = y$");
+    });
+  });
 });

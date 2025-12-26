@@ -83,7 +83,8 @@ export class EquationArrayTokenNode extends AbstractTokenNode {
       }
     }
 
-    return `\\begin{${env}}${arg_str}\n${content.trim()}\n\\end{${env}}\n`;
+    const labels = this.isInline ? "" : this.getLabelsLatex();
+    return `\\begin{${env}}${arg_str}\n${labels}${content.trim()}\n\\end{${env}}\n`;
   }
 
   getTooltipContent(): string | null {
