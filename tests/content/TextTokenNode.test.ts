@@ -123,6 +123,30 @@ describe('TextTokenNode', () => {
       expect(latex).toContain('textbf');
       expect(latex).toContain('emph');
     });
+
+    it('should skip styles in LaTeX when skipStyles is true', () => {
+      const token = {
+        type: TokenType.TEXT,
+        content: 'Bold text',
+        styles: ['bold']
+      };
+      const node = factory.createNode(token) as TextTokenNode;
+
+      expect(node.getLatexContent()).toContain('textbf');
+      expect(node.getLatexContent({ skipStyles: true })).toBe('Bold text');
+    });
+
+    it('should skip styles in Markdown when skipStyles is true', () => {
+      const token = {
+        type: TokenType.TEXT,
+        content: 'Bold text',
+        styles: ['bold']
+      };
+      const node = factory.createNode(token) as TextTokenNode;
+
+      expect(node.getMarkdownContent()).toContain('**');
+      expect(node.getMarkdownContent({ skipStyles: true })).toBe('Bold text');
+    });
   });
 });
 

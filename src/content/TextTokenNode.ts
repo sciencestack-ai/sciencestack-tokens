@@ -62,7 +62,7 @@ export class TextTokenNode extends BaseTokenNode {
     let content = escapeLatexSpecialChars(rawStr);
     // Replace newlines with double newlines for latex
     content = content.replace(/\n/g, '\n\n');
-    if (this.styles) {
+    if (this.styles && !options?.skipStyles) {
       content = wrapStylesToLatex(content, this.styles);
     }
     return content;
@@ -78,7 +78,7 @@ export class TextTokenNode extends BaseTokenNode {
     // Replace newlines with double newlines for markdown
     let content = rawStr.replace(/\n/g, '\n\n');
     // Apply markdown styling
-    if (this.styles) content = wrapStylesToMarkdown(content, this.styles);
+    if (this.styles && !options?.skipStyles) content = wrapStylesToMarkdown(content, this.styles);
     return content;
   }
 }

@@ -16,6 +16,8 @@ export type BaseExportOptions = {
       }
     | null
     | undefined;
+  /** Skip applying text styles (bold, italic, etc.) during export */
+  skipStyles?: boolean;
 };
 
 export type LatexExportOptions = BaseExportOptions;
