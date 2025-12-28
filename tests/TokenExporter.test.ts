@@ -486,8 +486,8 @@ describe("TokenExporter", () => {
       const span0 = spans.get(nodes[0].id);
       const span1 = spans.get(nodes[1].id);
 
-      expect(span0).toEqual({ start: 0, end: 6 }); // "Hello "
-      expect(span1).toEqual({ start: 6, end: 11 }); // "World"
+      expect(span0).toEqual({ start: 0, end: 6, type: TokenType.TEXT }); // "Hello "
+      expect(span1).toEqual({ start: 6, end: 11, type: TokenType.TEXT }); // "World"
     });
 
     it("should track span for section node", () => {
@@ -714,8 +714,8 @@ describe("TokenExporter", () => {
       const span0 = spans.get(nodes[0].id);
       const span1 = spans.get(nodes[1].id);
 
-      expect(span0).toEqual({ start: 0, end: 6 });
-      expect(span1).toEqual({ start: 6, end: 11 });
+      expect(span0).toEqual({ start: 0, end: 6, type: TokenType.TEXT });
+      expect(span1).toEqual({ start: 6, end: 11, type: TokenType.TEXT });
     });
 
     it("should track spans for section with children in markdown", () => {

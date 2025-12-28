@@ -101,30 +101,30 @@ export class TokenExporter {
 
   /**
    * Export to LaTeX with position spans for each node.
-   * Returns both the content and a map of nodeId -> { start, end } positions.
+   * Returns both the content and a map of nodeId -> { start, end, type } positions.
    *
    * @example
    * ```typescript
    * const { content, spans } = exporter.toLatexWithSpans(ast);
-   * // spans.get("node-123") => { start: 100, end: 150 }
+   * // spans.get("node-123") => { start: 100, end: 150, type: "text" }
    * ```
    */
   toLatexWithSpans(
     input: AbstractTokenNode[] | BaseToken[],
     options?: LatexExportOptions
-  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+  ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
     const nodes = this.ensureNodes(input);
     return TokenExporter.toLatexWithSpans(nodes, options);
   }
 
   /**
    * Export to Markdown with position spans for each node.
-   * Returns both the content and a map of nodeId -> { start, end } positions.
+   * Returns both the content and a map of nodeId -> { start, end, type } positions.
    */
   toMarkdownWithSpans(
     input: AbstractTokenNode[] | BaseToken[],
     options?: MarkdownExportOptions
-  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+  ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
     const nodes = this.ensureNodes(input);
     return TokenExporter.toMarkdownWithSpans(nodes, options);
   }
@@ -192,8 +192,8 @@ export class TokenExporter {
     getNodeContent: (node: AbstractTokenNode) => string,
     getChildrenContent: (nodes: AbstractTokenNode[]) => string,
     newlineSeparator: string
-  ): { content: string; spans: Map<string, { start: number; end: number }> } {
-    const spans = new Map<string, { start: number; end: number }>();
+  ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
+    const spans = new Map<string, { start: number; end: number; type: string }>();
     const position = { current: 0 };
 
     // Recursively find child spans within a parent's output
@@ -211,7 +211,7 @@ export class TokenExporter {
         if (childPos >= 0) {
           const childStart = basePosition + childPos;
           const childEnd = childStart + childOutput.length;
-          spans.set(child.id, { start: childStart, end: childEnd });
+          spans.set(child.id, { start: childStart, end: childEnd, type: child.type });
           searchStart = childPos + childOutput.length;
 
           // Recursively find grandchildren spans
@@ -268,7 +268,7 @@ export class TokenExporter {
           position.current += nodeContent.length;
         }
 
-        spans.set(node.id, { start, end: position.current });
+        spans.set(node.id, { start, end: position.current, type: node.type });
       }
 
       return result;
@@ -287,7 +287,7 @@ export class TokenExporter {
   static toLatexWithSpans(
     nodes: AbstractTokenNode[],
     options?: LatexExportOptions
-  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+  ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
     return TokenExporter.toContentWithSpans(
       nodes,
       (node) => node.getLatexContent(options),
@@ -304,7 +304,7 @@ export class TokenExporter {
   static toMarkdownWithSpans(
     nodes: AbstractTokenNode[],
     options?: MarkdownExportOptions
-  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+  ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
     return TokenExporter.toContentWithSpans(
       nodes,
       (node) => node.getMarkdownContent(options),

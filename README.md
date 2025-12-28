@@ -189,7 +189,7 @@ const section = factory.createNode({
 const { content, spans } = TokenExporter.toLatexWithSpans([section]);
 
 // content: "\section{Introduction}\nHello world \ref{fig:1} end.\n"
-// spans: Map<nodeId, { start: number, end: number }>
+// spans: Map<nodeId, { start: number, end: number, type: string }>
 ```
 
 ### Output Structure
@@ -198,11 +198,11 @@ const { content, spans } = TokenExporter.toLatexWithSpans([section]);
 Content: "\section{Introduction}\nHello world \ref{fig:1} end.\n"
 
 Spans:
-  "title-0":   { start: 9,  end: 21 }  => "Introduction"
-  "content-0": { start: 23, end: 35 }  => "Hello world "
-  "content-1": { start: 35, end: 46 }  => "\ref{fig:1}"
-  "content-2": { start: 46, end: 51 }  => " end."
-  "<section>": { start: 0,  end: 52 }  => (entire section)
+  "title-0":   { start: 9,  end: 21, type: "text" }     => "Introduction"
+  "content-0": { start: 23, end: 35, type: "text" }     => "Hello world "
+  "content-1": { start: 35, end: 46, type: "ref" }      => "\ref{fig:1}"
+  "content-2": { start: 46, end: 51, type: "text" }     => " end."
+  "<section>": { start: 0,  end: 52, type: "section" }  => (entire section)
 ```
 
 ### Using Spans
@@ -212,13 +212,21 @@ Spans:
 const refSpan = spans.get(refNode.id);
 console.log(content.substring(refSpan.start, refSpan.end)); // "\ref{fig:1}"
 
-// Find which node contains a position (e.g., for click handling)
+// Filter by type
+const textSpans = [...spans].filter(([_, s]) => s.type === "text");
+
+// Find most specific node at position (smallest span containing pos)
 function findNodeAtPosition(pos: number): string | undefined {
+  let best: { id: string; size: number } | undefined;
   for (const [nodeId, span] of spans) {
     if (pos >= span.start && pos < span.end) {
-      return nodeId;
+      const size = span.end - span.start;
+      if (!best || size < best.size) {
+        best = { id: nodeId, size };
+      }
     }
   }
+  return best?.id;
 }
 ```
 
