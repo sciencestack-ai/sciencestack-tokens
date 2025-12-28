@@ -100,6 +100,36 @@ export class TokenExporter {
   }
 
   /**
+   * Export to LaTeX with position spans for each node.
+   * Returns both the content and a map of nodeId -> { start, end } positions.
+   *
+   * @example
+   * ```typescript
+   * const { content, spans } = exporter.toLatexWithSpans(ast);
+   * // spans.get("node-123") => { start: 100, end: 150 }
+   * ```
+   */
+  toLatexWithSpans(
+    input: AbstractTokenNode[] | BaseToken[],
+    options?: LatexExportOptions
+  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+    const nodes = this.ensureNodes(input);
+    return TokenExporter.toLatexWithSpans(nodes, options);
+  }
+
+  /**
+   * Export to Markdown with position spans for each node.
+   * Returns both the content and a map of nodeId -> { start, end } positions.
+   */
+  toMarkdownWithSpans(
+    input: AbstractTokenNode[] | BaseToken[],
+    options?: MarkdownExportOptions
+  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+    const nodes = this.ensureNodes(input);
+    return TokenExporter.toMarkdownWithSpans(nodes, options);
+  }
+
+  /**
    * Export to plain text (instance method - uses factory for raw tokens)
    */
   toText(input: AbstractTokenNode[] | BaseToken[], options?: CopyContentOptions): string {
@@ -151,6 +181,136 @@ export class TokenExporter {
    */
   static toLatex(nodes: AbstractTokenNode[], options?: LatexExportOptions): string {
     return AbstractTokenNode.GetLatexContent(nodes, options);
+  }
+
+  /**
+   * Internal helper for generating content with spans.
+   * Works for both LaTeX and Markdown by accepting content getter functions.
+   */
+  private static toContentWithSpans(
+    nodes: AbstractTokenNode[],
+    getNodeContent: (node: AbstractTokenNode) => string,
+    getChildrenContent: (nodes: AbstractTokenNode[]) => string,
+    newlineSeparator: string
+  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+    const spans = new Map<string, { start: number; end: number }>();
+    const position = { current: 0 };
+
+    // Recursively find child spans within a parent's output
+    const findChildSpans = (
+      node: AbstractTokenNode,
+      fullOutput: string,
+      basePosition: number
+    ) => {
+      let searchStart = 0;
+      for (const child of node.getChildren()) {
+        const childOutput = getNodeContent(child);
+        if (childOutput.length === 0) continue;
+
+        const childPos = fullOutput.indexOf(childOutput, searchStart);
+        if (childPos >= 0) {
+          const childStart = basePosition + childPos;
+          const childEnd = childStart + childOutput.length;
+          spans.set(child.id, { start: childStart, end: childEnd });
+          searchStart = childPos + childOutput.length;
+
+          // Recursively find grandchildren spans
+          if (child.hasChildren()) {
+            findChildSpans(child, childOutput, childStart);
+          }
+        }
+      }
+    };
+
+    const walkNodes = (nodesToWalk: AbstractTokenNode[], addNewlines: boolean) => {
+      let result = '';
+
+      for (const node of nodesToWalk) {
+        // Add newline before non-inline nodes
+        if (addNewlines && !node.isInline && result.length > 0) {
+          result += newlineSeparator;
+          position.current += newlineSeparator.length;
+        }
+
+        const start = position.current;
+
+        if (node.hasChildren()) {
+          // For container nodes, we need to handle wrapper content + children
+          const fullOutput = getNodeContent(node);
+          const childrenOutput = getChildrenContent(node.getChildren());
+
+          // Find where children content starts in the full output
+          const childrenStart = fullOutput.indexOf(childrenOutput);
+
+          if (childrenStart >= 0 && childrenOutput.length > 0) {
+            // Has wrapper content - add prefix, then walk children, then add suffix
+            const prefix = fullOutput.substring(0, childrenStart);
+            const suffix = fullOutput.substring(childrenStart + childrenOutput.length);
+
+            result += prefix;
+            position.current += prefix.length;
+
+            // Recursively process children
+            result += walkNodes(node.getChildren(), true);
+
+            result += suffix;
+            position.current += suffix.length;
+          } else {
+            // Complex node structure - use full output and find children within
+            result += fullOutput;
+            findChildSpans(node, fullOutput, start);
+            position.current += fullOutput.length;
+          }
+        } else {
+          // Leaf node - straightforward
+          const nodeContent = getNodeContent(node);
+          result += nodeContent;
+          position.current += nodeContent.length;
+        }
+
+        spans.set(node.id, { start, end: position.current });
+      }
+
+      return result;
+    };
+
+    const content = walkNodes(nodes, true);
+
+    return { content, spans };
+  }
+
+  /**
+   * Export token nodes to LaTeX with position spans for each node.
+   * Recursively walks the tree and records spans for every node.
+   * Parent spans encompass their children's spans.
+   */
+  static toLatexWithSpans(
+    nodes: AbstractTokenNode[],
+    options?: LatexExportOptions
+  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+    return TokenExporter.toContentWithSpans(
+      nodes,
+      (node) => node.getLatexContent(options),
+      (children) => AbstractTokenNode.GetLatexContent(children, options),
+      '\n'
+    );
+  }
+
+  /**
+   * Export token nodes to Markdown with position spans for each node.
+   * Recursively walks the tree and records spans for every node.
+   * Parent spans encompass their children's spans.
+   */
+  static toMarkdownWithSpans(
+    nodes: AbstractTokenNode[],
+    options?: MarkdownExportOptions
+  ): { content: string; spans: Map<string, { start: number; end: number }> } {
+    return TokenExporter.toContentWithSpans(
+      nodes,
+      (node) => node.getMarkdownContent(options),
+      (children) => AbstractTokenNode.GetMarkdownContent(children, options),
+      '\n\n'
+    );
   }
 
   /**

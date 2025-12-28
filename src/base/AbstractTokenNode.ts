@@ -173,11 +173,7 @@ export abstract class AbstractTokenNode {
     let content = '';
     for (let node of nodes) {
       if (!node.isInline) content += '\n';
-      let nodeContent = node.getLatexContent(options);
-      if (options?.onNode) {
-        nodeContent = options.onNode(node, nodeContent);
-      }
-      content += nodeContent;
+      content += node.getLatexContent(options);
     }
     return content;
   }
@@ -186,11 +182,7 @@ export abstract class AbstractTokenNode {
     let content = '';
     for (let node of nodes) {
       if (!node.isInline) content += '\n\n';
-      let markdownContent = node.getMarkdownContent(options);
-      if (options?.onNode) {
-        markdownContent = options.onNode(node, markdownContent);
-      }
-      content += markdownContent;
+      content += node.getMarkdownContent(options);
     }
     return content;
   }

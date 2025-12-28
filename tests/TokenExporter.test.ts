@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { TokenExporter } from "../src/TokenExporter";
 import { TokenNodeFactory } from "../src/base/TokenNodeFactory";
-import { AbstractTokenNode } from "../src/base/AbstractTokenNode";
 import {
   TokenType,
   BaseToken,
@@ -9,7 +8,7 @@ import {
   SectionToken,
   EquationToken,
   DisplayType,
-  TabularToken,
+  ReferenceToken,
 } from "../src/types";
 import { TabularTokenNode } from "../src";
 
@@ -472,81 +471,296 @@ describe("TokenExporter", () => {
     });
   });
 
-  describe("onNode callback", () => {
-    it("should call onNode for each node via TokenExporter.toLatex", () => {
-      const sectionNode = factory.createNode({
-        type: TokenType.SECTION,
-        title: [{ type: TokenType.TEXT, content: "Introduction" }],
-        content: [
-          { type: TokenType.TEXT, content: "Hello " },
-          { type: TokenType.TEXT, content: "World" },
-        ],
-        level: 1,
-      } as SectionToken)!;
-
-      const visitedNodes: { id: string; type: string }[] = [];
-
-      TokenExporter.toLatex([sectionNode], {
-        onNode: (node, defaultLatex) => {
-          const n = node as AbstractTokenNode;
-          visitedNodes.push({ id: n.id, type: n.type });
-          return defaultLatex;
-        },
-      });
-
-      // Section + title text + 2 content texts = 4 nodes
-      expect(visitedNodes.length).toBeGreaterThanOrEqual(4);
-      expect(visitedNodes.some((n) => n.type === TokenType.SECTION)).toBe(true);
-      expect(visitedNodes.filter((n) => n.type === TokenType.TEXT).length).toBeGreaterThanOrEqual(3);
-    });
-
-    it("should support span tracking pattern via exporter", () => {
+  describe("toLatexWithSpans", () => {
+    it("should return content and spans for flat list of text nodes", () => {
       const nodes = [
         factory.createNode({ type: TokenType.TEXT, content: "Hello " } as TextToken)!,
         factory.createNode({ type: TokenType.TEXT, content: "World" } as TextToken)!,
       ];
 
-      const spans: { nodeId: string; start: number; end: number }[] = [];
-      let position = 0;
+      const { content, spans } = TokenExporter.toLatexWithSpans(nodes);
 
-      const result = TokenExporter.toLatex(nodes, {
-        onNode: (node, defaultLatex) => {
-          const n = node as AbstractTokenNode;
-          spans.push({
-            nodeId: n.id,
-            start: position,
-            end: position + defaultLatex.length,
-          });
-          position += defaultLatex.length;
-          return defaultLatex;
-        },
-      });
+      expect(content).toBe("Hello World");
+      expect(spans.size).toBe(2);
 
-      expect(spans).toHaveLength(2);
-      expect(spans[0].start).toBe(0);
-      expect(spans[0].end).toBe(6); // "Hello "
-      expect(spans[1].start).toBe(6);
-      expect(spans[1].end).toBe(11); // "World"
-      expect(result).toContain("Hello");
-      expect(result).toContain("World");
+      const span0 = spans.get(nodes[0].id);
+      const span1 = spans.get(nodes[1].id);
+
+      expect(span0).toEqual({ start: 0, end: 6 }); // "Hello "
+      expect(span1).toEqual({ start: 6, end: 11 }); // "World"
     });
 
-    it("should allow transforming output (strip labels)", () => {
-      const eqNode = factory.createNode({
-        type: TokenType.EQUATION,
-        content: "E = mc^2",
-        display: DisplayType.BLOCK,
-        labels: ["eq:einstein"],
-      } as EquationToken)!;
+    it("should track span for section node", () => {
+      const sectionNode = factory.createNode({
+        type: TokenType.SECTION,
+        title: [{ type: TokenType.TEXT, content: "Intro" }],
+        content: [{ type: TokenType.TEXT, content: "Hello" }],
+        level: 1,
+      } as SectionToken)!;
 
-      const result = TokenExporter.toLatex([eqNode], {
-        onNode: (node, defaultLatex) => {
-          return defaultLatex.replace(/\\label\{[^}]*\}/g, "");
-        },
-      });
+      const { content, spans } = TokenExporter.toLatexWithSpans([sectionNode]);
 
-      expect(result).not.toContain("\\label");
-      expect(result).toContain("E = mc^2");
+      // Section span should encompass everything
+      const sectionSpan = spans.get(sectionNode.id);
+      expect(sectionSpan).toBeDefined();
+      expect(sectionSpan!.start).toBe(0);
+      expect(sectionSpan!.end).toBe(content.length);
+
+      // Content should include section header and text
+      expect(content).toContain("\\section{Intro}");
+      expect(content).toContain("Hello");
+    });
+
+    it("should work with instance method", () => {
+      const exporter = new TokenExporter(factory);
+      const tokens: BaseToken[] = [
+        { type: TokenType.TEXT, content: "Test" } as TextToken,
+      ];
+
+      const { content, spans } = exporter.toLatexWithSpans(tokens);
+
+      expect(content).toBe("Test");
+      expect(spans.size).toBe(1);
+    });
+
+    it("should track spans for simple container with children", () => {
+      // Use GROUP which has no wrapper, just children
+      const groupNode = factory.createNode({
+        type: TokenType.GROUP,
+        content: [
+          { type: TokenType.TEXT, content: "A" },
+          { type: TokenType.TEXT, content: "B" },
+        ],
+      })!;
+
+      const { content, spans } = TokenExporter.toLatexWithSpans([groupNode]);
+
+      // Should have spans for group + 2 text children
+      expect(spans.size).toBe(3);
+
+      // Content should be A + B
+      expect(content).toContain("A");
+      expect(content).toContain("B");
+
+      // Group span encompasses everything
+      const groupSpan = spans.get(groupNode.id);
+      expect(groupSpan).toBeDefined();
+      expect(groupSpan!.start).toBe(0);
+    });
+
+    it("should correctly position text nodes in group", () => {
+      const groupNode = factory.createNode({
+        type: TokenType.GROUP,
+        content: [
+          { type: TokenType.TEXT, content: "Hello" },
+          { type: TokenType.TEXT, content: "World" },
+        ],
+      })!;
+
+      const { content, spans } = TokenExporter.toLatexWithSpans([groupNode]);
+
+      // Find the text node spans by looking at children
+      const children = groupNode.getChildren();
+      const spanA = spans.get(children[0].id);
+      const spanB = spans.get(children[1].id);
+
+      expect(spanA).toBeDefined();
+      expect(spanB).toBeDefined();
+
+      // Verify content at those positions matches
+      expect(content.substring(spanA!.start, spanA!.end)).toBe("Hello");
+      expect(content.substring(spanB!.start, spanB!.end)).toBe("World");
+    });
+
+    it("should correctly position realistic section with text and refs", () => {
+      // Create: \section{Introduction} some text \ref{fig:1} another text
+      const sectionNode = factory.createNode({
+        type: TokenType.SECTION,
+        title: [{ type: TokenType.TEXT, content: "Introduction" }],
+        content: [
+          { type: TokenType.TEXT, content: "some text " },
+          { type: TokenType.REF, content: ["fig:1"] } as ReferenceToken,
+          { type: TokenType.TEXT, content: " another text" },
+        ],
+        level: 1,
+      } as SectionToken)!;
+
+      const { content, spans } = TokenExporter.toLatexWithSpans([sectionNode]);
+
+      // Verify the output looks correct
+      expect(content).toContain("\\section{Introduction}");
+      expect(content).toContain("some text");
+      expect(content).toContain("\\ref{fig:1}");
+      expect(content).toContain("another text");
+
+      // Verify section span encompasses everything
+      const sectionSpan = spans.get(sectionNode.id);
+      expect(sectionSpan).toBeDefined();
+      expect(content.substring(sectionSpan!.start, sectionSpan!.end)).toBe(content);
+
+      // Get all children
+      const children = sectionNode.getChildren();
+      expect(children.length).toBe(4); // 1 title + 3 content
+
+      // Title span should point to "Introduction"
+      const titleSpan = spans.get(children[0].id);
+      expect(titleSpan).toBeDefined();
+      expect(content.substring(titleSpan!.start, titleSpan!.end)).toBe("Introduction");
+
+      // Content spans should point to correct content
+      const textSpan1 = spans.get(children[1].id);
+      const refSpan = spans.get(children[2].id);
+      const textSpan2 = spans.get(children[3].id);
+
+      expect(textSpan1).toBeDefined();
+      expect(refSpan).toBeDefined();
+      expect(textSpan2).toBeDefined();
+
+      expect(content.substring(textSpan1!.start, textSpan1!.end)).toBe("some text ");
+      expect(content.substring(refSpan!.start, refSpan!.end)).toBe("\\ref{fig:1}");
+      expect(content.substring(textSpan2!.start, textSpan2!.end)).toBe(" another text");
+
+      // Spans should be in order and non-overlapping
+      expect(textSpan1!.end).toBeLessThanOrEqual(refSpan!.start);
+      expect(refSpan!.end).toBeLessThanOrEqual(textSpan2!.start);
+    });
+
+    it("should handle deeply nested structure (section > subsection > text)", () => {
+      // Create nested sections:
+      // \section{Intro}
+      //   Some intro text
+      //   \subsection{Details}
+      //     Detail text \ref{eq:1} more details
+      const innerSection = {
+        type: TokenType.SECTION,
+        title: [{ type: TokenType.TEXT, content: "Details" }],
+        content: [
+          { type: TokenType.TEXT, content: "Detail text " },
+          { type: TokenType.REF, content: ["eq:1"] } as ReferenceToken,
+          { type: TokenType.TEXT, content: " more details" },
+        ],
+        level: 2, // subsection
+      } as SectionToken;
+
+      const outerSection = factory.createNode({
+        type: TokenType.SECTION,
+        title: [{ type: TokenType.TEXT, content: "Intro" }],
+        content: [
+          { type: TokenType.TEXT, content: "Some intro text" },
+          innerSection,
+        ],
+        level: 1,
+      } as SectionToken)!;
+
+      const { content, spans } = TokenExporter.toLatexWithSpans([outerSection]);
+
+      // Verify structure
+      expect(content).toContain("\\section{Intro}");
+      expect(content).toContain("\\subsection{Details}");
+      expect(content).toContain("Some intro text");
+      expect(content).toContain("Detail text");
+      expect(content).toContain("\\ref{eq:1}");
+      expect(content).toContain("more details");
+
+      // Outer section span should encompass everything
+      const outerSpan = spans.get(outerSection.id);
+      expect(outerSpan).toBeDefined();
+      expect(outerSpan!.start).toBe(0);
+      expect(outerSpan!.end).toBe(content.length);
+
+      // Find all children recursively and verify they have spans
+      const allChildren = outerSection.getChildren();
+      for (const child of allChildren) {
+        const span = spans.get(child.id);
+        expect(span).toBeDefined();
+        // Verify the span content is within the output
+        const spanContent = content.substring(span!.start, span!.end);
+        expect(spanContent.length).toBeGreaterThan(0);
+      }
+
+      // Find the inner section (subsection)
+      const innerSectionNode = allChildren.find(c => c.type === TokenType.SECTION);
+      expect(innerSectionNode).toBeDefined();
+
+      // Inner section's children should also have spans
+      const innerChildren = innerSectionNode!.getChildren();
+      for (const child of innerChildren) {
+        const span = spans.get(child.id);
+        expect(span).toBeDefined();
+
+        // Verify content matches
+        const spanContent = content.substring(span!.start, span!.end);
+        if (child.type === TokenType.TEXT) {
+          expect(["Details", "Detail text ", " more details"]).toContain(spanContent);
+        } else if (child.type === TokenType.REF) {
+          expect(spanContent).toBe("\\ref{eq:1}");
+        }
+      }
+    });
+  });
+
+  describe("toMarkdownWithSpans", () => {
+    it("should return content and spans for flat list of text nodes", () => {
+      const nodes = [
+        factory.createNode({ type: TokenType.TEXT, content: "Hello " } as TextToken)!,
+        factory.createNode({ type: TokenType.TEXT, content: "World" } as TextToken)!,
+      ];
+
+      const { content, spans } = TokenExporter.toMarkdownWithSpans(nodes);
+
+      expect(content).toBe("Hello World");
+      expect(spans.size).toBe(2);
+
+      const span0 = spans.get(nodes[0].id);
+      const span1 = spans.get(nodes[1].id);
+
+      expect(span0).toEqual({ start: 0, end: 6 });
+      expect(span1).toEqual({ start: 6, end: 11 });
+    });
+
+    it("should track spans for section with children in markdown", () => {
+      const sectionNode = factory.createNode({
+        type: TokenType.SECTION,
+        title: [{ type: TokenType.TEXT, content: "Introduction" }],
+        content: [
+          { type: TokenType.TEXT, content: "some text " },
+          { type: TokenType.TEXT, content: "more text" },
+        ],
+        level: 1,
+      } as SectionToken)!;
+
+      const { content, spans } = TokenExporter.toMarkdownWithSpans([sectionNode]);
+
+      // Verify markdown structure
+      expect(content).toContain("## Introduction");
+      expect(content).toContain("some text");
+      expect(content).toContain("more text");
+
+      // Section span should encompass everything
+      const sectionSpan = spans.get(sectionNode.id);
+      expect(sectionSpan).toBeDefined();
+      expect(sectionSpan!.start).toBe(0);
+      expect(sectionSpan!.end).toBe(content.length);
+
+      // Children should have spans
+      const children = sectionNode.getChildren();
+      for (const child of children) {
+        const span = spans.get(child.id);
+        expect(span).toBeDefined();
+        expect(span!.end).toBeGreaterThan(span!.start);
+      }
+    });
+
+    it("should work with instance method", () => {
+      const exporter = new TokenExporter(factory);
+      const tokens: BaseToken[] = [
+        { type: TokenType.TEXT, content: "Test" } as TextToken,
+      ];
+
+      const { content, spans } = exporter.toMarkdownWithSpans(tokens);
+
+      expect(content).toBe("Test");
+      expect(spans.size).toBe(1);
     });
   });
 });

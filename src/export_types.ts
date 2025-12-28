@@ -18,8 +18,6 @@ export type BaseExportOptions = {
     | undefined;
   /** Skip applying text styles (bold, italic, etc.) during export */
   skipStyles?: boolean;
-  /** Callback invoked for each node during export. Receives the node and default output, returns final output. */
-  onNode?: (node: unknown, defaultOutput: string) => string;
 };
 
 export type LatexExportOptions = BaseExportOptions;

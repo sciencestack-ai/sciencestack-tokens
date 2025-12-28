@@ -167,6 +167,68 @@ const section: SectionToken = {
 - **Styles**: `STYLE_TO_TAILWIND` mappings
 - **Converters**: Citation format converters
 
+## Exporting with Position Spans
+
+Use `toLatexWithSpans()` or `toMarkdownWithSpans()` to export content with position tracking for each node. This enables features like click-to-navigate, highlighting source locations, or mapping rendered output back to AST nodes.
+
+```typescript
+import { TokenExporter, TokenNodeFactory } from '@sciencestack-ai/tokens';
+
+const factory = new TokenNodeFactory();
+const section = factory.createNode({
+  type: "section",
+  title: [{ type: "text", content: "Introduction" }],
+  content: [
+    { type: "text", content: "Hello world " },
+    { type: "ref", content: ["fig:1"] },
+    { type: "text", content: " end." },
+  ],
+  level: 1,
+});
+
+const { content, spans } = TokenExporter.toLatexWithSpans([section]);
+
+// content: "\section{Introduction}\nHello world \ref{fig:1} end.\n"
+// spans: Map<nodeId, { start: number, end: number }>
+```
+
+### Output Structure
+
+```
+Content: "\section{Introduction}\nHello world \ref{fig:1} end.\n"
+
+Spans:
+  "title-0":   { start: 9,  end: 21 }  => "Introduction"
+  "content-0": { start: 23, end: 35 }  => "Hello world "
+  "content-1": { start: 35, end: 46 }  => "\ref{fig:1}"
+  "content-2": { start: 46, end: 51 }  => " end."
+  "<section>": { start: 0,  end: 52 }  => (entire section)
+```
+
+### Using Spans
+
+```typescript
+// Get position of a specific node
+const refSpan = spans.get(refNode.id);
+console.log(content.substring(refSpan.start, refSpan.end)); // "\ref{fig:1}"
+
+// Find which node contains a position (e.g., for click handling)
+function findNodeAtPosition(pos: number): string | undefined {
+  for (const [nodeId, span] of spans) {
+    if (pos >= span.start && pos < span.end) {
+      return nodeId;
+    }
+  }
+}
+```
+
+Also available for Markdown:
+
+```typescript
+const { content, spans } = TokenExporter.toMarkdownWithSpans(nodes);
+// content: "## Introduction\n---\n\nHello world [fig:1] end."
+```
+
 ## Development
 
 ### Testing
