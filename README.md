@@ -230,6 +230,15 @@ function findNodeAtPosition(pos: number): string | undefined {
 }
 ```
 
+### Limitations
+
+Child node spans are found using string matching as a fallback when nodes render children in non-standard ways (e.g., equations use raw content without escaping). This can produce incorrect spans when:
+
+- **Duplicate content**: Two identical child nodes may get the same span position
+- **Transformed content**: If a node transforms children beyond `getLatexContent()` or `getCopyContent()`
+
+Parent node spans are always accurate. For most use cases (annotations, click-to-navigate), this works well.
+
 Also available for Markdown:
 
 ```typescript
