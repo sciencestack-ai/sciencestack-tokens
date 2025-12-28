@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { TokenExporter } from "../src/TokenExporter";
 import { TokenNodeFactory } from "../src/base/TokenNodeFactory";
+import { AbstractTokenNode } from "../src/base/AbstractTokenNode";
 import {
   TokenType,
   BaseToken,
@@ -468,6 +469,84 @@ describe("TokenExporter", () => {
       // Second row - C at col 1 (placeholder at col 0 was skipped)
       expect(resolved[2].row).toBe(1);
       expect(resolved[2].col).toBe(1);
+    });
+  });
+
+  describe("onNode callback", () => {
+    it("should call onNode for each node via TokenExporter.toLatex", () => {
+      const sectionNode = factory.createNode({
+        type: TokenType.SECTION,
+        title: [{ type: TokenType.TEXT, content: "Introduction" }],
+        content: [
+          { type: TokenType.TEXT, content: "Hello " },
+          { type: TokenType.TEXT, content: "World" },
+        ],
+        level: 1,
+      } as SectionToken)!;
+
+      const visitedNodes: { id: string; type: string }[] = [];
+
+      TokenExporter.toLatex([sectionNode], {
+        onNode: (node, defaultLatex) => {
+          const n = node as AbstractTokenNode;
+          visitedNodes.push({ id: n.id, type: n.type });
+          return defaultLatex;
+        },
+      });
+
+      // Section + title text + 2 content texts = 4 nodes
+      expect(visitedNodes.length).toBeGreaterThanOrEqual(4);
+      expect(visitedNodes.some((n) => n.type === TokenType.SECTION)).toBe(true);
+      expect(visitedNodes.filter((n) => n.type === TokenType.TEXT).length).toBeGreaterThanOrEqual(3);
+    });
+
+    it("should support span tracking pattern via exporter", () => {
+      const nodes = [
+        factory.createNode({ type: TokenType.TEXT, content: "Hello " } as TextToken)!,
+        factory.createNode({ type: TokenType.TEXT, content: "World" } as TextToken)!,
+      ];
+
+      const spans: { nodeId: string; start: number; end: number }[] = [];
+      let position = 0;
+
+      const result = TokenExporter.toLatex(nodes, {
+        onNode: (node, defaultLatex) => {
+          const n = node as AbstractTokenNode;
+          spans.push({
+            nodeId: n.id,
+            start: position,
+            end: position + defaultLatex.length,
+          });
+          position += defaultLatex.length;
+          return defaultLatex;
+        },
+      });
+
+      expect(spans).toHaveLength(2);
+      expect(spans[0].start).toBe(0);
+      expect(spans[0].end).toBe(6); // "Hello "
+      expect(spans[1].start).toBe(6);
+      expect(spans[1].end).toBe(11); // "World"
+      expect(result).toContain("Hello");
+      expect(result).toContain("World");
+    });
+
+    it("should allow transforming output (strip labels)", () => {
+      const eqNode = factory.createNode({
+        type: TokenType.EQUATION,
+        content: "E = mc^2",
+        display: DisplayType.BLOCK,
+        labels: ["eq:einstein"],
+      } as EquationToken)!;
+
+      const result = TokenExporter.toLatex([eqNode], {
+        onNode: (node, defaultLatex) => {
+          return defaultLatex.replace(/\\label\{[^}]*\}/g, "");
+        },
+      });
+
+      expect(result).not.toContain("\\label");
+      expect(result).toContain("E = mc^2");
     });
   });
 });
