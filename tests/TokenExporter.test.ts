@@ -572,6 +572,36 @@ describe("TokenExporter", () => {
       expect(content.substring(spanB!.start, spanB!.end)).toBe("World");
     });
 
+    it("should track spans for equation with math content in text child", () => {
+      // This tests the specific case where equation uses getCopyContent() on children
+      // but text children have getLatexContent() that escapes - the fallback should work
+      const mathContent = "H^N(t):=\\sum_{\\lambda\\in\\{0\\}}e^{-t\\lambda}";
+      const equationNode = factory.createNode({
+        type: TokenType.EQUATION,
+        content: [{ type: TokenType.TEXT, content: mathContent }],
+        display: "block",
+        name: "equation*",
+      } as EquationToken)!;
+
+      const { content, spans } = TokenExporter.toLatexWithSpans([equationNode]);
+
+      // Equation span should exist
+      const eqSpan = spans.get(equationNode.id);
+      expect(eqSpan).toBeDefined();
+      expect(eqSpan!.start).toBe(0);
+      expect(eqSpan!.end).toBe(content.length);
+
+      // Child text span should also exist (this was the bug - it was missing)
+      const children = equationNode.getChildren();
+      expect(children.length).toBe(1);
+      const textSpan = spans.get(children[0].id);
+      expect(textSpan).toBeDefined();
+
+      // The text span content should be the math content (unescaped)
+      const textContent = content.substring(textSpan!.start, textSpan!.end);
+      expect(textContent).toBe(mathContent);
+    });
+
     it("should correctly position realistic section with text and refs", () => {
       // Create: \section{Introduction} some text \ref{fig:1} another text
       const sectionNode = factory.createNode({

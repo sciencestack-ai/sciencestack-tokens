@@ -5,7 +5,8 @@ import {
   MarkdownExportOptions,
   LatexExportOptions,
   JSONExportOptions,
-  CopyContentOptions
+  CopyContentOptions,
+  SpanTracker
 } from './export_types';
 import { convertTokens2String } from './utils';
 
@@ -184,133 +185,110 @@ export class TokenExporter {
   }
 
   /**
-   * Internal helper for generating content with spans.
-   * Works for both LaTeX and Markdown by accepting content getter functions.
+   * Recursively find missing child spans using fallback string matching.
+   * Called after primary tracking for nodes that don't go through GetLatexContent
+   * (e.g., equation children rendered via getCopyContent).
    */
-  private static toContentWithSpans(
+  private static findMissingChildSpans(
     nodes: AbstractTokenNode[],
-    getNodeContent: (node: AbstractTokenNode) => string,
-    getChildrenContent: (nodes: AbstractTokenNode[]) => string,
-    newlineSeparator: string
-  ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
-    const spans = new Map<string, { start: number; end: number; type: string }>();
-    const position = { current: 0 };
+    content: string,
+    spans: Map<string, { start: number; end: number; type: string }>,
+    getNodeContent: (node: AbstractTokenNode) => string
+  ): void {
+    for (const node of nodes) {
+      if (!node.hasChildren()) continue;
 
-    // Recursively find child spans within a parent's output
-    const findChildSpans = (
-      node: AbstractTokenNode,
-      fullOutput: string,
-      basePosition: number
-    ) => {
+      const parentSpan = spans.get(node.id);
+      if (!parentSpan) continue;
+
+      const parentContent = content.substring(parentSpan.start, parentSpan.end);
       let searchStart = 0;
-      for (const child of node.getChildren()) {
-        const childOutput = getNodeContent(child);
-        if (childOutput.length === 0) continue;
 
-        const childPos = fullOutput.indexOf(childOutput, searchStart);
-        if (childPos >= 0) {
-          const childStart = basePosition + childPos;
+      for (const child of node.getChildren()) {
+        // Skip if already tracked
+        if (spans.has(child.id)) {
+          // Still recurse for grandchildren
+          TokenExporter.findMissingChildSpans([child], content, spans, getNodeContent);
+          continue;
+        }
+
+        // Try getLatexContent first, then getCopyContent as fallback
+        let childOutput = getNodeContent(child);
+        let childPos = parentContent.indexOf(childOutput, searchStart);
+
+        // Fallback: try getCopyContent if primary content didn't match
+        if (childPos < 0 && childOutput.length > 0) {
+          childOutput = child.getCopyContent();
+          childPos = parentContent.indexOf(childOutput, searchStart);
+        }
+
+        if (childPos >= 0 && childOutput.length > 0) {
+          const childStart = parentSpan.start + childPos;
           const childEnd = childStart + childOutput.length;
           spans.set(child.id, { start: childStart, end: childEnd, type: child.type });
           searchStart = childPos + childOutput.length;
 
-          // Recursively find grandchildren spans
+          // Recurse for grandchildren
           if (child.hasChildren()) {
-            findChildSpans(child, childOutput, childStart);
+            TokenExporter.findMissingChildSpans([child], content, spans, getNodeContent);
           }
         }
       }
-    };
-
-    const walkNodes = (nodesToWalk: AbstractTokenNode[], addNewlines: boolean) => {
-      let result = '';
-
-      for (const node of nodesToWalk) {
-        // Add newline before non-inline nodes
-        if (addNewlines && !node.isInline && result.length > 0) {
-          result += newlineSeparator;
-          position.current += newlineSeparator.length;
-        }
-
-        const start = position.current;
-
-        if (node.hasChildren()) {
-          // For container nodes, we need to handle wrapper content + children
-          const fullOutput = getNodeContent(node);
-          const childrenOutput = getChildrenContent(node.getChildren());
-
-          // Find where children content starts in the full output
-          const childrenStart = fullOutput.indexOf(childrenOutput);
-
-          if (childrenStart >= 0 && childrenOutput.length > 0) {
-            // Has wrapper content - add prefix, then walk children, then add suffix
-            const prefix = fullOutput.substring(0, childrenStart);
-            const suffix = fullOutput.substring(childrenStart + childrenOutput.length);
-
-            result += prefix;
-            position.current += prefix.length;
-
-            // Recursively process children
-            result += walkNodes(node.getChildren(), true);
-
-            result += suffix;
-            position.current += suffix.length;
-          } else {
-            // Complex node structure - use full output and find children within
-            result += fullOutput;
-            findChildSpans(node, fullOutput, start);
-            position.current += fullOutput.length;
-          }
-        } else {
-          // Leaf node - straightforward
-          const nodeContent = getNodeContent(node);
-          result += nodeContent;
-          position.current += nodeContent.length;
-        }
-
-        spans.set(node.id, { start, end: position.current, type: node.type });
-      }
-
-      return result;
-    };
-
-    const content = walkNodes(nodes, true);
-
-    return { content, spans };
+    }
   }
 
   /**
    * Export token nodes to LaTeX with position spans for each node.
-   * Recursively walks the tree and records spans for every node.
-   * Parent spans encompass their children's spans.
+   * Uses recursive tracking via options for accurate span positions.
+   * Falls back to string matching for children of nodes that don't use GetLatexContent.
    */
   static toLatexWithSpans(
     nodes: AbstractTokenNode[],
     options?: LatexExportOptions
   ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
-    return TokenExporter.toContentWithSpans(
+    const tracker: SpanTracker = {
+      spans: new Map(),
+      position: { current: 0 }
+    };
+
+    const content = AbstractTokenNode.GetLatexContent(nodes, { ...options, _spanTracker: tracker });
+
+    // Find any missing child spans using fallback string matching
+    TokenExporter.findMissingChildSpans(
       nodes,
-      (node) => node.getLatexContent(options),
-      (children) => AbstractTokenNode.GetLatexContent(children, options),
-      '\n'
+      content,
+      tracker.spans,
+      (node) => node.getLatexContent(options)
     );
+
+    return { content, spans: tracker.spans };
   }
 
   /**
    * Export token nodes to Markdown with position spans for each node.
-   * Recursively walks the tree and records spans for every node.
-   * Parent spans encompass their children's spans.
+   * Uses recursive tracking via options for accurate span positions.
+   * Falls back to string matching for children of nodes that don't use GetMarkdownContent.
    */
   static toMarkdownWithSpans(
     nodes: AbstractTokenNode[],
     options?: MarkdownExportOptions
   ): { content: string; spans: Map<string, { start: number; end: number; type: string }> } {
-    return TokenExporter.toContentWithSpans(
+    const tracker: SpanTracker = {
+      spans: new Map(),
+      position: { current: 0 }
+    };
+
+    const content = AbstractTokenNode.GetMarkdownContent(nodes, { ...options, _spanTracker: tracker });
+
+    // Find any missing child spans using fallback string matching
+    TokenExporter.findMissingChildSpans(
       nodes,
-      (node) => node.getMarkdownContent(options),
-      (children) => AbstractTokenNode.GetMarkdownContent(children, options),
-      '\n\n'
+      content,
+      tracker.spans,
+      (node) => node.getMarkdownContent(options)
     );
+
+    return { content, spans: tracker.spans };
   }
 
   /**

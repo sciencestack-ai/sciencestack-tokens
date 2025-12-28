@@ -171,18 +171,54 @@ export abstract class AbstractTokenNode {
 
   static GetLatexContent(nodes: AbstractTokenNode[], options?: LatexExportOptions): string {
     let content = '';
+    const tracker = options?._spanTracker;
+
+    // Don't pass tracker to inner nodes - only track at this level
+    // Child spans will be found by findMissingChildSpans using string matching
+    const innerOptions = tracker ? { ...options, _spanTracker: undefined } : options;
+
     for (let node of nodes) {
-      if (!node.isInline) content += '\n';
-      content += node.getLatexContent(options);
+      // Add newline before non-inline nodes (but not before the first node)
+      if (!node.isInline && content.length > 0) {
+        content += '\n';
+        if (tracker) tracker.position.current += 1;
+      }
+
+      const start = tracker?.position.current ?? 0;
+      const nodeContent = node.getLatexContent(innerOptions);
+      content += nodeContent;
+
+      if (tracker) {
+        tracker.position.current = start + nodeContent.length;
+        tracker.spans.set(node.id, { start, end: tracker.position.current, type: node.type });
+      }
     }
     return content;
   }
 
   static GetMarkdownContent(nodes: AbstractTokenNode[], options?: MarkdownExportOptions): string {
     let content = '';
+    const tracker = options?._spanTracker;
+
+    // Don't pass tracker to inner nodes - only track at this level
+    // Child spans will be found by findMissingChildSpans using string matching
+    const innerOptions = tracker ? { ...options, _spanTracker: undefined } : options;
+
     for (let node of nodes) {
-      if (!node.isInline) content += '\n\n';
-      content += node.getMarkdownContent(options);
+      // Add double newline before non-inline nodes (but not before the first node)
+      if (!node.isInline && content.length > 0) {
+        content += '\n\n';
+        if (tracker) tracker.position.current += 2;
+      }
+
+      const start = tracker?.position.current ?? 0;
+      const nodeContent = node.getMarkdownContent(innerOptions);
+      content += nodeContent;
+
+      if (tracker) {
+        tracker.position.current = start + nodeContent.length;
+        tracker.spans.set(node.id, { start, end: tracker.position.current, type: node.type });
+      }
     }
     return content;
   }

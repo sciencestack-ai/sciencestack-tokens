@@ -5,6 +5,15 @@
  * Always returns full content (no partial extraction)
  */
 
+/**
+ * Internal tracker for recording node positions during content export.
+ * Used by toLatexWithSpans/toMarkdownWithSpans for accurate span tracking.
+ */
+export type SpanTracker = {
+  spans: Map<string, { start: number; end: number; type: string }>;
+  position: { current: number };
+};
+
 export type BaseExportOptions = {
   /** Resolver for asset paths (images, pdfs, diagrams) */
   assetPathResolver?: (path: string) => string;
@@ -18,6 +27,8 @@ export type BaseExportOptions = {
     | undefined;
   /** Skip applying text styles (bold, italic, etc.) during export */
   skipStyles?: boolean;
+  /** Internal: span tracker for position recording (used by toLatexWithSpans/toMarkdownWithSpans) */
+  _spanTracker?: SpanTracker;
 };
 
 export type LatexExportOptions = BaseExportOptions;
