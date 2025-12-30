@@ -1,8 +1,13 @@
-import { BaseToken, TokenType, IToken } from '../types';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions, JSONExportOptions } from '../export_types';
-import { AbstractTokenNode } from './AbstractTokenNode';
-import { ITokenNodeFactory } from './ITokenNodeFactory';
-import { NodeRoles } from './NodeRoles';
+import { BaseToken, TokenType, IToken } from "../types";
+import {
+  CopyContentOptions,
+  LatexExportOptions,
+  MarkdownExportOptions,
+  JSONExportOptions,
+} from "../export_types";
+import { AbstractTokenNode } from "./AbstractTokenNode";
+import { ITokenNodeFactory } from "./ITokenNodeFactory";
+import { NodeRoles } from "./NodeRoles";
 
 export class BaseTokenNode extends AbstractTokenNode {
   constructor(
@@ -29,7 +34,10 @@ export class BaseTokenNode extends AbstractTokenNode {
     }
   }
 
-  protected _initializeBaseTokensAsChildren(tokens: BaseToken[], nodeRole: NodeRoles) {
+  protected _initializeBaseTokensAsChildren(
+    tokens: BaseToken[],
+    nodeRole: NodeRoles
+  ) {
     const nodes: AbstractTokenNode[] = [];
     for (let i = 0; i < tokens.length; i++) {
       const t = tokens[i];
@@ -53,11 +61,11 @@ export class BaseTokenNode extends AbstractTokenNode {
     }
 
     const content = this.token.content;
-    if (typeof content === 'string') {
+    if (typeof content === "string") {
       return content;
     }
 
-    return '';
+    return "";
   }
 
   getLatexContent(options?: LatexExportOptions): string {
@@ -69,11 +77,11 @@ export class BaseTokenNode extends AbstractTokenNode {
     }
 
     const content = this.token.content;
-    if (typeof content === 'string') {
+    if (typeof content === "string") {
       return content;
     }
 
-    return '';
+    return "";
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
@@ -83,15 +91,23 @@ export class BaseTokenNode extends AbstractTokenNode {
     }
 
     const content = this.token.content;
-    if (typeof content === 'string') {
+    if (typeof content === "string") {
       return content;
     }
 
-    return '';
+    return "";
   }
 
   getJSONContent(options?: JSONExportOptions): any {
     const token = this.token;
+
+    // only include non-null values
+    const result: any = {};
+    for (const [key, value] of Object.entries(token)) {
+      if (value != null) {
+        result[key] = value;
+      }
+    }
 
     if (this.hasChildren()) {
       const title = this.getData(NodeRoles.TITLE);
@@ -102,31 +118,32 @@ export class BaseTokenNode extends AbstractTokenNode {
       if (title && title.length > 0) {
         if (Array.isArray(title)) {
           titleContent = AbstractTokenNode.GetJSONContent(title, options);
-        } else if (typeof title === 'string') {
+        } else if (typeof title === "string") {
           titleContent = title;
         }
       }
       if (children && children.length > 0) {
         if (Array.isArray(children)) {
           childrenContent = AbstractTokenNode.GetJSONContent(children, options);
-        } else if (typeof children === 'string') {
+        } else if (typeof children === "string") {
           childrenContent = children;
         }
       }
 
-      return {
-        ...token,
-        title: titleContent,
-        content: childrenContent
-      };
+      if (titleContent !== null) {
+        result.title = titleContent;
+      }
+      if (childrenContent !== null) {
+        result.content = childrenContent;
+      }
     }
 
     // Return a copy to avoid mutation
-    return { ...token };
+    return result;
   }
 
   getTooltipContent(): string | null {
-    if (typeof this.token.content === 'string') {
+    if (typeof this.token.content === "string") {
       return this.token.content;
     }
     return null;
@@ -148,7 +165,7 @@ export class BaseTokenNode extends AbstractTokenNode {
       }
       return this.getChildren();
     }
-    if (typeof this.token.content === 'string') {
+    if (typeof this.token.content === "string") {
       return this.token.content;
     }
     return null;

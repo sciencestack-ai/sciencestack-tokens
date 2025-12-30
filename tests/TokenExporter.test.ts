@@ -120,6 +120,24 @@ describe("TokenExporter", () => {
       expect(result).toEqual([{ type: TokenType.TEXT, content: "Test" }]);
     });
 
+    it("toJSON should exclude null and undefined fields", () => {
+      // Create a token with explicit undefined/null fields
+      const token = {
+        type: TokenType.TEXT,
+        content: "Test",
+        styles: undefined,
+        labels: null,
+        id: "test-id",
+      } as any;
+      const node = factory.createNode(token)!;
+      const result = TokenExporter.toJSON([node]);
+
+      // Should only include non-null fields
+      expect(result[0]).toEqual({ type: TokenType.TEXT, content: "Test", id: "test-id" });
+      expect(result[0]).not.toHaveProperty("styles");
+      expect(result[0]).not.toHaveProperty("labels");
+    });
+
     it("tokensToText should convert raw tokens to text", () => {
       const tokens: BaseToken[] = [
         { type: TokenType.TEXT, content: "Hello " },
