@@ -163,7 +163,7 @@ export abstract class AbstractTokenNode {
   static GetCopyContent(nodes: AbstractTokenNode[], options?: CopyContentOptions): string {
     let content = '';
     for (let node of nodes) {
-      if (!node.isInline) content += '\n';
+      if (!node.isInline && content.length > 0) content += '\n';
       content += node.getCopyContent(options);
     }
     return content;

@@ -3,7 +3,7 @@ import { ITokenNodeFactory } from "../base/ITokenNodeFactory";
 import { BaseEnvTokenNode } from "./BaseEnvTokenNode";
 import { BaseTokenNode } from "../base/BaseTokenNode";
 import { AbstractTokenNode } from "../base/AbstractTokenNode";
-import { LatexExportOptions, MarkdownExportOptions } from "../export_types";
+import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions } from "../export_types";
 
 export class SectionTokenNode extends BaseEnvTokenNode {
   constructor(
@@ -56,6 +56,25 @@ export class SectionTokenNode extends BaseEnvTokenNode {
 
   getAnchorId(prefix = "sec") {
     return super.getAnchorId(prefix);
+  }
+
+  getCopyContent(options?: CopyContentOptions): string {
+    const titleData = this.getTitleData();
+    let title = titleData.length > 0
+      ? AbstractTokenNode.GetCopyContent(titleData, options)
+      : '';
+
+    const content = AbstractTokenNode.GetCopyContent(this.getContentData(), options);
+
+    // Add numbering like markdown does (but not for paragraphs)
+    if (this.numbering && !this.isParagraph() && title) {
+      title = `${this.numbering}: ${title}`;
+    }
+
+    if (title) {
+      return `${title}\n\n${content}`;
+    }
+    return content;
   }
 
   getReferenceText(): string | null {

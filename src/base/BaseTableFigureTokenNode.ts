@@ -60,8 +60,10 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
   }
 
   getCopyContent(options?: CopyContentOptions): string {
+    const envName = this.getEnvironmentName();
+    const heading = this.numbering ? `${envName} ${this.numbering}` : envName;
     const content = super.getCopyContent(options);
-    return content;
+    return `${heading}\n\n${content}`;
   }
 
   getLatexContent(options?: LatexExportOptions): string {

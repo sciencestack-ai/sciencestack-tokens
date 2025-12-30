@@ -65,6 +65,4 @@ export interface CopyContentOptions extends BaseExportOptions {
   startOffset?: number;
   /** Ending character offset for partial content extraction */
   endOffset?: number;
-  /** Don't include children by default if we are copying already flattened wyiswyg child content e.g. textnodes */
-  includeChildren?: boolean;
 }

@@ -245,4 +245,59 @@ describe("SectionTokenNode", () => {
       expect(anchorId).toContain("sec-");
     });
   });
+
+  describe("Text export", () => {
+    it("should export section with title and content", () => {
+      const token = {
+        type: TokenType.SECTION,
+        level: 1,
+        content: [{ type: TokenType.TEXT, content: "Section content" }],
+        title: [{ type: TokenType.TEXT, content: "Introduction" }],
+      };
+      const node = factory.createNode(token) as SectionTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("Introduction\n\nSection content");
+    });
+
+    it("should include numbering in text export", () => {
+      const token = {
+        type: TokenType.SECTION,
+        level: 1,
+        numbering: "2.1",
+        content: [{ type: TokenType.TEXT, content: "Section content" }],
+        title: [{ type: TokenType.TEXT, content: "Methods" }],
+      };
+      const node = factory.createNode(token) as SectionTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("2.1: Methods\n\nSection content");
+    });
+
+    it("should not number paragraphs (level >= 4)", () => {
+      const token = {
+        type: TokenType.SECTION,
+        level: 4,
+        numbering: "1.2.3.4",
+        content: [{ type: TokenType.TEXT, content: "Paragraph content" }],
+        title: [{ type: TokenType.TEXT, content: "A Paragraph" }],
+      };
+      const node = factory.createNode(token) as SectionTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("A Paragraph\n\nParagraph content");
+    });
+
+    it("should handle section without title", () => {
+      const token = {
+        type: TokenType.SECTION,
+        level: 1,
+        content: [{ type: TokenType.TEXT, content: "Content only" }],
+      };
+      const node = factory.createNode(token) as SectionTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("Content only");
+    });
+  });
 });

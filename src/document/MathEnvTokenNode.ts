@@ -3,7 +3,7 @@ import { ITokenNodeFactory } from "../base/ITokenNodeFactory";
 import { BaseEnvTokenNode } from "./BaseEnvTokenNode";
 import { BaseTokenNode } from "../base/BaseTokenNode";
 import { AbstractTokenNode } from "../base/AbstractTokenNode";
-import { LatexExportOptions, MarkdownExportOptions } from "../export_types";
+import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions } from "../export_types";
 
 export class MathEnvTokenNode extends BaseEnvTokenNode {
   protected _cachedTooltipContent: string | null = null;
@@ -94,6 +94,26 @@ export class MathEnvTokenNode extends BaseEnvTokenNode {
 
   getReferenceText(): string | null {
     return this.numbering ? `${this.name + " " + this.numbering}` : null;
+  }
+
+  getCopyContent(options?: CopyContentOptions): string {
+    const titleData = this.getTitleData();
+    const title = titleData.length > 0
+      ? AbstractTokenNode.GetCopyContent(titleData, options)
+      : '';
+
+    const content = AbstractTokenNode.GetCopyContent(this.getContentData(), options);
+
+    // Build heading like "Theorem 1: Title" or just "Theorem 1" or "Theorem"
+    let heading = this.getName();
+    if (this.numbering) {
+      heading += ` ${this.numbering}`;
+    }
+    if (title) {
+      heading += `: ${title}`;
+    }
+
+    return `${heading}\n\n${content}`;
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {

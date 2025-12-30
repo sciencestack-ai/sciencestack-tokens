@@ -147,6 +147,47 @@ describe("MathEnvTokenNode", () => {
     });
   });
 
+  describe("Text export", () => {
+    it("should export with name and content", () => {
+      const token = {
+        type: TokenType.MATH_ENV,
+        name: "theorem",
+        content: [{ type: TokenType.TEXT, content: "A theorem statement." }],
+      };
+      const node = factory.createNode(token) as MathEnvTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("Theorem\n\nA theorem statement.");
+    });
+
+    it("should include numbering in text export", () => {
+      const token = {
+        type: TokenType.MATH_ENV,
+        name: "lemma",
+        numbering: "2.1",
+        content: [{ type: TokenType.TEXT, content: "A lemma statement." }],
+      };
+      const node = factory.createNode(token) as MathEnvTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("Lemma 2.1\n\nA lemma statement.");
+    });
+
+    it("should include title in text export", () => {
+      const token = {
+        type: TokenType.MATH_ENV,
+        name: "theorem",
+        numbering: "1",
+        title: [{ type: TokenType.TEXT, content: "Main Result" }],
+        content: [{ type: TokenType.TEXT, content: "The main theorem." }],
+      };
+      const node = factory.createNode(token) as MathEnvTokenNode;
+
+      const text = node.getCopyContent();
+      expect(text).toBe("Theorem 1: Main Result\n\nThe main theorem.");
+    });
+  });
+
   describe("Label export", () => {
     it("should include labels in LaTeX export", () => {
       const token = {

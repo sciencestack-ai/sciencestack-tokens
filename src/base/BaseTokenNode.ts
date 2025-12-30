@@ -47,7 +47,7 @@ export class BaseTokenNode extends AbstractTokenNode {
   }
 
   getCopyContent(options?: CopyContentOptions): string {
-    if (this.hasChildren() && options?.includeChildren) {
+    if (this.hasChildren()) {
       const children = this.getChildren();
       return AbstractTokenNode.GetCopyContent(children, options);
     }

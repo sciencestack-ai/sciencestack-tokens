@@ -3,7 +3,8 @@ import { AbstractToken, BaseToken, ListItemToken, MathEnvToken, SectionToken } f
 import { convertTokens2String } from '../utils';
 import { ITokenNodeFactory } from '../base/ITokenNodeFactory';
 import { NodeRoles } from '../base/NodeRoles';
-import { LatexExportOptions } from '../export_types';
+import { AbstractTokenNode } from '../base/AbstractTokenNode';
+import { CopyContentOptions, LatexExportOptions } from '../export_types';
 
 export abstract class BaseEnvTokenNode extends BaseTokenNode {
   constructor(
@@ -39,6 +40,20 @@ export abstract class BaseEnvTokenNode extends BaseTokenNode {
 
   getLatexContent(options?: LatexExportOptions) {
     return BaseTokenNode.GetLatexContent(this.getContentData(), options);
+  }
+
+  getCopyContent(options?: CopyContentOptions): string {
+    const titleData = this.getTitleData();
+    const title = titleData.length > 0
+      ? AbstractTokenNode.GetCopyContent(titleData, options)
+      : '';
+
+    const content = AbstractTokenNode.GetCopyContent(this.getContentData(), options);
+
+    if (title) {
+      return `${title}\n\n${content}`;
+    }
+    return content;
   }
 
   getData(nodeRole?: NodeRoles) {
