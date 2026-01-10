@@ -199,7 +199,7 @@ describe("SectionTokenNode", () => {
       };
       const node = factory.createNode(token) as SectionTokenNode;
 
-      const markdown = node.getMarkdownContent();
+      const markdown = node.getMarkdownContent({ includeAnchors: true });
       expect(markdown).toContain("<a id=");
     });
   });

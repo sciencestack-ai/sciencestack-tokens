@@ -215,7 +215,7 @@ describe("BibliographyTokenNode", () => {
       };
       const node = factory.createNode(token) as BibliographyTokenNode;
 
-      const markdown = node.getMarkdownContent();
+      const markdown = node.getMarkdownContent({ includeAnchors: true });
       expect(markdown).toContain('<a id="bib-smith2020"></a>');
     });
 
@@ -229,7 +229,7 @@ describe("BibliographyTokenNode", () => {
       };
       const node = factory.createNode(token) as BibliographyTokenNode;
 
-      const markdown = node.getMarkdownContent();
+      const markdown = node.getMarkdownContent({ includeAnchors: true });
       expect(markdown).toContain("[smith2020]");
       expect(markdown).toContain("[jones2021]");
       expect(markdown).toContain('<a id="bib-smith2020"></a>');

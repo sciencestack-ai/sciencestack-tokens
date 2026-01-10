@@ -55,8 +55,7 @@ export class BibliographyTokenNode extends BaseTokenNode {
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
-    const anchorId = this.getAnchorId();
-    const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : "";
+    const anchor = this.getAnchorHtml(options);
 
     const content = super.getMarkdownContent(options);
     return `${anchor}## References\n\n${content}\n`;

@@ -19,8 +19,7 @@ export class TitleTokenNode extends BaseTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const content = super.getMarkdownContent(options);
-    const anchorId = this.getAnchorId();
-    const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : '';
+    const anchor = this.getAnchorHtml(options);
     return `${anchor}# ${content}`;
   }
 }

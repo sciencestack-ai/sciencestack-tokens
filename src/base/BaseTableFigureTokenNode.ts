@@ -1,12 +1,26 @@
-import { BaseTokenNode } from './BaseTokenNode';
-import { CaptionToken, TableToken, FigureToken, SubFigureToken, SubTableToken } from '../types';
-import { ITokenNodeFactory } from './ITokenNodeFactory';
-import { convertTokens2String } from '../utils';
-import { CaptionTokenNode } from '../content/CaptionTokenNode';
-import { CopyContentOptions, LatexExportOptions, MarkdownExportOptions } from '../export_types';
-import { AbstractTokenNode } from './AbstractTokenNode';
+import { BaseTokenNode } from "./BaseTokenNode";
+import {
+  CaptionToken,
+  TableToken,
+  FigureToken,
+  SubFigureToken,
+  SubTableToken,
+} from "../types";
+import { ITokenNodeFactory } from "./ITokenNodeFactory";
+import { convertTokens2String } from "../utils";
+import { CaptionTokenNode } from "../content/CaptionTokenNode";
+import {
+  CopyContentOptions,
+  LatexExportOptions,
+  MarkdownExportOptions,
+} from "../export_types";
+import { AbstractTokenNode } from "./AbstractTokenNode";
 
-type TableFigureTokens = TableToken | FigureToken | SubFigureToken | SubTableToken;
+type TableFigureTokens =
+  | TableToken
+  | FigureToken
+  | SubFigureToken
+  | SubTableToken;
 export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
   protected _captionToken: CaptionToken | undefined;
 
@@ -74,16 +88,20 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
-    const anchorId = this.getAnchorId();
-    const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : '';
+    const anchor = this.getAnchorHtml(options);
 
     // Use environment name and numbering for the heading with underline
     const envName = this.getEnvironmentName();
-    const headingText = this.numbering ? `${envName} ${this.numbering}` : envName;
+    const headingText = this.numbering
+      ? `${envName} ${this.numbering}`
+      : envName;
     const heading = `<u><b>${headingText}</b></u>`;
 
     // Children render normally under this heading
-    const content = super.getMarkdownContent(options);
+    const content = AbstractTokenNode.GetMarkdownContent(
+      this.getChildren(),
+      options
+    );
 
     return `${anchor}${heading}\n\n${content}`;
   }
@@ -97,7 +115,11 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
         captions.push(node);
       }
 
-      if (topLevelOnly && node instanceof BaseTableFigureTokenNode && node !== this) {
+      if (
+        topLevelOnly &&
+        node instanceof BaseTableFigureTokenNode &&
+        node !== this
+      ) {
         // Don't traverse into nested table/figure containers (subfigures, subtables, etc.)
         // as they have their own captions that are not siblings of this container's captions
         return;

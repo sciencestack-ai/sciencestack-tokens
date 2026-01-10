@@ -99,8 +99,7 @@ export class SectionTokenNode extends BaseEnvTokenNode {
         ? `${this.numbering}: ${title}`
         : title;
 
-    const anchorId = this.getAnchorId();
-    const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : "";
+    const anchor = this.getAnchorHtml(options);
 
     const content = AbstractTokenNode.GetMarkdownContent(
       this.getContentData(),

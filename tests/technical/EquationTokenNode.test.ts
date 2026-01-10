@@ -117,7 +117,7 @@ describe("EquationTokenNode", () => {
       const node = factory.createNode(token) as EquationTokenNode;
 
       expect(node).toBeDefined();
-      const markdown = node.getMarkdownContent();
+      const markdown = node.getMarkdownContent({ includeAnchors: true });
       expect(markdown).toContain('<a id="eq-test">');
     });
   });

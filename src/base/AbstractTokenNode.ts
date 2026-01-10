@@ -329,6 +329,17 @@ export abstract class AbstractTokenNode {
   }
 
   /**
+   * Returns HTML anchor tag for markdown export if includeAnchors option is enabled.
+   * @param options Markdown export options
+   * @param suffix String to append after anchor (default: '\n\n')
+   */
+  protected getAnchorHtml(options?: MarkdownExportOptions, suffix: string = '\n\n'): string {
+    if (!options?.includeAnchors) return '';
+    const anchorId = this.getAnchorId();
+    return anchorId ? `<a id="${anchorId}"></a>${suffix}` : '';
+  }
+
+  /**
    * For \ref displays of the tokennode (if label exists)
    */
   getReferenceText(): string | null {

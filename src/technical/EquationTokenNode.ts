@@ -111,8 +111,7 @@ export class EquationTokenNode extends BaseTokenNode {
 
     // attach anchor id if not in math
     if (!isMath) {
-      const anchorId = this.getAnchorId();
-      const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : "";
+      const anchor = this.getAnchorHtml(options);
       // Block equation with $$ on their own lines
       dataStr = `${anchor}$$\n${dataStr}\n$$\n\n`;
     }

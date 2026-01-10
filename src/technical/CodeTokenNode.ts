@@ -43,8 +43,7 @@ export class CodeTokenNode extends BaseTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const code = this.getData();
-    const anchorId = this.getAnchorId();
-    const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : '';
+    const anchor = this.getAnchorHtml(options);
 
     if (this.isInline) {
       return `\`${code}\``;

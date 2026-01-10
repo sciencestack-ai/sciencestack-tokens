@@ -2,7 +2,11 @@ import { CaptionToken, TokenType } from "../types";
 import { BaseTokenNode } from "../base/BaseTokenNode";
 import { ITokenNodeFactory } from "../base/ITokenNodeFactory";
 import { BaseTableFigureTokenNode } from "../base/BaseTableFigureTokenNode";
-import { CopyContentOptions, LatexExportOptions } from "../export_types";
+import {
+  CopyContentOptions,
+  LatexExportOptions,
+  MarkdownExportOptions,
+} from "../export_types";
 import { AbstractTokenNode } from "../base/AbstractTokenNode";
 import { NodeRoles } from "../base/NodeRoles";
 
@@ -63,7 +67,7 @@ export class CaptionTokenNode extends BaseTokenNode {
     );
   }
 
-  getMarkdownContent(options?: any): string {
+  getMarkdownContent(options?: MarkdownExportOptions): string {
     const content = super.getMarkdownContent(options);
     return `Caption: *${content}*\n`;
   }

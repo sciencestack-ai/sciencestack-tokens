@@ -36,6 +36,7 @@ export type JSONExportOptions = BaseExportOptions;
 
 export interface MarkdownExportOptions extends BaseExportOptions {
   math?: boolean; // whether in mathmode or not (for checking if we need to wrap in $$)
+  includeAnchors?: boolean;
 }
 
 /**
