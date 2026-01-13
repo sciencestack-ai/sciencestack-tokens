@@ -25,8 +25,7 @@ export class AbstractSectionTokenNode extends BaseEnvTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const content = super.getMarkdownContent(options);
-    const anchor = this.getAnchorHtml(options);
 
-    return `${anchor}## Abstract\n\n> ${content.replace(/\n/g, '  \n> ')}`;
+    return `## Abstract\n\n> ${content.replace(/\n/g, '  \n> ')}`;
   }
 }

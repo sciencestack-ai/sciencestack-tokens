@@ -56,11 +56,9 @@ export class ListTokenNode extends BaseTokenNode {
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
-    const anchor = this.getAnchorHtml(options);
-
     // Lists are just containers, children (ListItemTokenNode) handle formatting
     const content = super.getMarkdownContent(options);
-    return `${anchor}${content}\n\n`;
+    return `${content}\n\n`;
   }
 
   getListItemIndex(item: ListItemTokenNode): number {

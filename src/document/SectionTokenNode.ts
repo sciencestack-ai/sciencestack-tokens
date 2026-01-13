@@ -99,13 +99,11 @@ export class SectionTokenNode extends BaseEnvTokenNode {
         ? `${this.numbering}: ${title}`
         : title;
 
-    const anchor = this.getAnchorHtml(options);
-
     const content = AbstractTokenNode.GetMarkdownContent(
       this.getContentData(),
       options
     );
-    const titleStr = `${anchor}${headerPrefix} ${numberedTitle}\n---`;
+    const titleStr = `${headerPrefix} ${numberedTitle}\n---`;
     return `${titleStr}\n\n${content}`;
   }
 }

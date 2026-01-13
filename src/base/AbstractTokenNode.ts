@@ -212,7 +212,13 @@ export abstract class AbstractTokenNode {
       }
 
       const start = tracker?.position.current ?? 0;
-      const nodeContent = node.getMarkdownContent(innerOptions);
+      let nodeContent = node.getMarkdownContent(innerOptions);
+
+      // Apply postProcess callback if provided
+      if (options?.postProcess) {
+        nodeContent = options.postProcess(node, nodeContent);
+      }
+
       content += nodeContent;
 
       if (tracker) {
@@ -326,17 +332,6 @@ export abstract class AbstractTokenNode {
 
   getAnchorId(): string | null {
     return null;
-  }
-
-  /**
-   * Returns HTML anchor tag for markdown export if includeAnchors option is enabled.
-   * @param options Markdown export options
-   * @param suffix String to append after anchor (default: '\n\n')
-   */
-  protected getAnchorHtml(options?: MarkdownExportOptions, suffix: string = '\n\n'): string {
-    if (!options?.includeAnchors) return '';
-    const anchorId = this.getAnchorId();
-    return anchorId ? `<a id="${anchorId}"></a>${suffix}` : '';
   }
 
   /**

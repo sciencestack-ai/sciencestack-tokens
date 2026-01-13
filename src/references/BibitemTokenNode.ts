@@ -170,9 +170,8 @@ export class BibitemTokenNode extends AbstractTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const contentStr = this.getContentStr();
-    const anchor = this.getAnchorHtml(options, '');
 
     // Format as a markdown reference entry
-    return `- ${anchor}[${this.key}] ${contentStr}`;
+    return `- [${this.key}] ${contentStr}`;
   }
 }

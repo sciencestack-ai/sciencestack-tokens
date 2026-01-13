@@ -105,7 +105,7 @@ describe("EquationTokenNode", () => {
       expect(markdown).toContain("\\tag{2}");
     });
 
-    it("should include anchor ID in markdown when anchorId is provided", () => {
+    it("should support postProcess callback for adding anchors", () => {
       const token = {
         type: TokenType.EQUATION,
         content: "x = y",
@@ -117,7 +117,17 @@ describe("EquationTokenNode", () => {
       const node = factory.createNode(token) as EquationTokenNode;
 
       expect(node).toBeDefined();
-      const markdown = node.getMarkdownContent({ includeAnchors: true });
+      // Use postProcess to add anchor via static GetMarkdownContent
+      // postProcess is applied at the collection level
+      const markdown = EquationTokenNode.GetMarkdownContent([node], {
+        postProcess: (n, md) => {
+          const anchorId = (n as EquationTokenNode).token.anchorId;
+          if (anchorId) {
+            return `<a id="${anchorId}"></a>\n\n${md}`;
+          }
+          return md;
+        }
+      });
       expect(markdown).toContain('<a id="eq-test">');
     });
   });

@@ -1,3 +1,5 @@
+import type { AbstractTokenNode } from './base/AbstractTokenNode';
+
 // Export options for content methods
 
 /**
@@ -36,7 +38,8 @@ export type JSONExportOptions = BaseExportOptions;
 
 export interface MarkdownExportOptions extends BaseExportOptions {
   math?: boolean; // whether in mathmode or not (for checking if we need to wrap in $$)
-  includeAnchors?: boolean;
+  /** Callback to transform each node's markdown output. Called after node is converted to markdown. */
+  postProcess?: (node: AbstractTokenNode, markdown: string) => string;
 }
 
 /**

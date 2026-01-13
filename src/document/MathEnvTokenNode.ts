@@ -128,8 +128,6 @@ export class MathEnvTokenNode extends BaseEnvTokenNode {
     const heading = `<u><b>${headingText}: ${title}</b></u>`;
     const content = AbstractTokenNode.GetMarkdownContent(contentData, options);
 
-    const anchor = this.getAnchorHtml(options);
-
-    return `${anchor}${heading}\n\n${content}`;
+    return `${heading}\n\n${content}`;
   }
 }

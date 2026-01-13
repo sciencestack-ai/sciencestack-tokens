@@ -88,8 +88,6 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
-    const anchor = this.getAnchorHtml(options);
-
     // Use environment name and numbering for the heading with underline
     const envName = this.getEnvironmentName();
     const headingText = this.numbering
@@ -103,7 +101,7 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
       options
     );
 
-    return `${anchor}${heading}\n\n${content}`;
+    return `${heading}\n\n${content}`;
   }
 
   getAllCaptions(topLevelOnly = true) {

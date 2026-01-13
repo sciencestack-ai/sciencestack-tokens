@@ -208,14 +208,23 @@ describe("BibliographyTokenNode", () => {
       expect(markdown).toContain("Smith, J. (2020). A paper.");
     });
 
-    it("should include anchors for each bibitem", () => {
+    it("should support postProcess callback for adding anchors", () => {
       const token = {
         type: TokenType.BIBLIOGRAPHY,
         content: [createBibitemToken("smith2020", "Smith, J. (2020). A paper.")],
       };
       const node = factory.createNode(token) as BibliographyTokenNode;
 
-      const markdown = node.getMarkdownContent({ includeAnchors: true });
+      // Use postProcess to add anchors - this mimics the old includeAnchors behavior
+      const markdown = node.getMarkdownContent({
+        postProcess: (n, md) => {
+          const anchorId = n.getAnchorId?.();
+          if (anchorId) {
+            return `<a id="${anchorId}"></a>${md}`;
+          }
+          return md;
+        }
+      });
       expect(markdown).toContain('<a id="bib-smith2020"></a>');
     });
 
@@ -229,7 +238,15 @@ describe("BibliographyTokenNode", () => {
       };
       const node = factory.createNode(token) as BibliographyTokenNode;
 
-      const markdown = node.getMarkdownContent({ includeAnchors: true });
+      const markdown = node.getMarkdownContent({
+        postProcess: (n, md) => {
+          const anchorId = n.getAnchorId?.();
+          if (anchorId) {
+            return `<a id="${anchorId}"></a>${md}`;
+          }
+          return md;
+        }
+      });
       expect(markdown).toContain("[smith2020]");
       expect(markdown).toContain("[jones2021]");
       expect(markdown).toContain('<a id="bib-smith2020"></a>');

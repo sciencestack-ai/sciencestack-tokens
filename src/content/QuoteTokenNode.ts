@@ -28,10 +28,9 @@ export class QuoteTokenNode extends BaseTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const content = super.getMarkdownContent(options);
-    const anchor = this.getAnchorHtml(options);
 
     // Convert content to blockquote format with line breaks preserved
     const quotedContent = content.replace(/\n/g, '  \n> ');
-    return `${anchor}> ${quotedContent}`;
+    return `> ${quotedContent}`;
   }
 }

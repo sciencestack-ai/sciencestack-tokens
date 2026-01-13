@@ -55,10 +55,8 @@ export class BibliographyTokenNode extends BaseTokenNode {
   }
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
-    const anchor = this.getAnchorHtml(options);
-
     const content = super.getMarkdownContent(options);
-    return `${anchor}## References\n\n${content}\n`;
+    return `## References\n\n${content}\n`;
   }
 
   getCopyContent(options?: CopyContentOptions): string {

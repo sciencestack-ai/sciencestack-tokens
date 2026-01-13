@@ -189,7 +189,7 @@ describe("SectionTokenNode", () => {
       });
     });
 
-    it("should include anchor ID", () => {
+    it("should support postProcess callback for adding anchors", () => {
       const token = {
         type: TokenType.SECTION,
         level: 1,
@@ -199,7 +199,17 @@ describe("SectionTokenNode", () => {
       };
       const node = factory.createNode(token) as SectionTokenNode;
 
-      const markdown = node.getMarkdownContent({ includeAnchors: true });
+      // Use postProcess to add anchor via static GetMarkdownContent
+      // postProcess is applied at the collection level
+      const markdown = SectionTokenNode.GetMarkdownContent([node], {
+        postProcess: (n, md) => {
+          const anchorId = n.getAnchorId?.();
+          if (anchorId) {
+            return `<a id="${anchorId}"></a>\n\n${md}`;
+          }
+          return md;
+        }
+      });
       expect(markdown).toContain("<a id=");
     });
   });

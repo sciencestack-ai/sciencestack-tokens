@@ -43,7 +43,6 @@ export class CodeTokenNode extends BaseTokenNode {
 
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const code = this.getData();
-    const anchor = this.getAnchorHtml(options);
 
     if (this.isInline) {
       return `\`${code}\``;
@@ -51,6 +50,6 @@ export class CodeTokenNode extends BaseTokenNode {
 
     // Block code with language hint from title if available
     const language = this.title || '';
-    return `${anchor}\`\`\`${language}\n${code}\n\`\`\``;
+    return `\`\`\`${language}\n${code}\n\`\`\``;
   }
 }

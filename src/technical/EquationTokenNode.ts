@@ -109,11 +109,9 @@ export class EquationTokenNode extends BaseTokenNode {
       return ` $${dataStr}$ `;
     }
 
-    // attach anchor id if not in math
+    // Block equation with $$ on their own lines
     if (!isMath) {
-      const anchor = this.getAnchorHtml(options);
-      // Block equation with $$ on their own lines
-      dataStr = `${anchor}$$\n${dataStr}\n$$\n\n`;
+      dataStr = `$$\n${dataStr}\n$$\n\n`;
     }
 
     return dataStr;
