@@ -85,6 +85,14 @@ export class TokenExporter {
   // ============ Instance Methods (factory-aware) ============
 
   /**
+   * Build token nodes from raw tokens. If already nodes, returns as-is.
+   * Useful for building a labelResolver before exporting.
+   */
+  buildNodes(input: AbstractTokenNode[] | BaseToken[]): AbstractTokenNode[] {
+    return this.ensureNodes(input);
+  }
+
+  /**
    * Export to markdown (instance method - uses factory for raw tokens)
    */
   toMarkdown(input: AbstractTokenNode[] | BaseToken[], options?: MarkdownExportOptions): string {
