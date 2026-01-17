@@ -81,7 +81,6 @@ export class ReferenceTokenNode extends AbstractTokenNode {
     return labels
       .map((label) => {
         let referenceText = label;
-        let anchorId = label;
 
         // Use optional label resolver if provided
         if (options?.labelResolver) {
@@ -91,10 +90,6 @@ export class ReferenceTokenNode extends AbstractTokenNode {
             if (refText) {
               referenceText = refText;
             }
-            const _anchorId = resolvedToken.getAnchorId?.();
-            if (_anchorId) {
-              anchorId = _anchorId;
-            }
           }
         }
 
@@ -102,7 +97,7 @@ export class ReferenceTokenNode extends AbstractTokenNode {
           // don't add #label inside math since it will break math renderers like katex
           return `[\\text{Ref ${referenceText}}]`;
         }
-        return `[${referenceText}](#${anchorId})`;
+        return `[${referenceText}](#${label})`;
       })
       .join(", ");
   }

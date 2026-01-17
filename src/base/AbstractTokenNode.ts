@@ -330,10 +330,6 @@ export abstract class AbstractTokenNode {
     };
   }
 
-  getAnchorId(): string | null {
-    return null;
-  }
-
   /**
    * For \ref displays of the tokennode (if label exists)
    */

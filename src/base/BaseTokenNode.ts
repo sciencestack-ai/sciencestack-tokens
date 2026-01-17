@@ -170,8 +170,4 @@ export class BaseTokenNode extends AbstractTokenNode {
     }
     return null;
   }
-
-  getAnchorId(): string | null {
-    return this.token.anchorId ?? null;
-  }
 }

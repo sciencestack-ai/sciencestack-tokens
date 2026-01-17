@@ -54,10 +54,6 @@ export class SectionTokenNode extends BaseEnvTokenNode {
     return `${prefix}\n${labels}${content}\n`;
   }
 
-  getAnchorId(prefix = "sec") {
-    return super.getAnchorId(prefix);
-  }
-
   getCopyContent(options?: CopyContentOptions): string {
     const titleData = this.getTitleData();
     let title = titleData.length > 0

@@ -112,7 +112,7 @@ describe("EquationTokenNode", () => {
         display: DisplayType.BLOCK,
         numbering: "1",
         labels: ["eq:test"],
-        anchorId: "eq-test",
+        id: "eq-test",
       };
       const node = factory.createNode(token) as EquationTokenNode;
 
@@ -121,12 +121,12 @@ describe("EquationTokenNode", () => {
       // postProcess is applied at the collection level
       const markdown = EquationTokenNode.GetMarkdownContent([node], {
         postProcess: (n, md) => {
-          const anchorId = (n as EquationTokenNode).token.anchorId;
-          if (anchorId) {
-            return `<a id="${anchorId}"></a>\n\n${md}`;
+          const nodeId = (n as EquationTokenNode).token.id;
+          if (nodeId) {
+            return `<a id="${nodeId}"></a>\n\n${md}`;
           }
           return md;
-        }
+        },
       });
       expect(markdown).toContain('<a id="eq-test">');
     });

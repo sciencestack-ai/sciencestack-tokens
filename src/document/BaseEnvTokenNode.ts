@@ -89,19 +89,4 @@ export abstract class BaseEnvTokenNode extends BaseTokenNode {
   getTooltipContent(): string | null {
     return this.getTitleStr(false);
   }
-
-  getAnchorId(prefix: string = 'sec') {
-    const anchorId = super.getAnchorId();
-    if (anchorId) {
-      return anchorId;
-    }
-
-    if (this.numbering) {
-      return `${prefix}-${this.numbering}`;
-    }
-    if (this.labels.length > 0) {
-      return `${prefix}-${this.labels[0]}`;
-    }
-    return `${prefix}-${this.id}`;
-  }
 }

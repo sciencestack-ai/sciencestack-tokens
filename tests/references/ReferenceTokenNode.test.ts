@@ -138,14 +138,13 @@ describe("ReferenceTokenNode", () => {
         if (label === "fig:example") {
           return {
             getReferenceText: () => "Figure 1",
-            getAnchorId: () => "fig-1",
           };
         }
         return null;
       };
 
       const markdown = node.getMarkdownContent({ labelResolver: resolver });
-      expect(markdown).toBe("[Figure 1](#fig-1)");
+      expect(markdown).toBe("[Figure 1](#fig:example)");
     });
 
     it("should handle multiple references with resolver", () => {
@@ -158,24 +157,23 @@ describe("ReferenceTokenNode", () => {
       expect(node).toBeDefined();
 
       const resolver = (label: string) => {
-        const mapping: Record<string, { text: string; anchor: string }> = {
-          "fig:1": { text: "Figure 1", anchor: "fig-1" },
-          "fig:2": { text: "Figure 2", anchor: "fig-2" },
+        const mapping: Record<string, string> = {
+          "fig:1": "Figure 1",
+          "fig:2": "Figure 2",
         };
 
         const resolved = mapping[label];
         if (resolved) {
           return {
-            getReferenceText: () => resolved.text,
-            getAnchorId: () => resolved.anchor,
+            getReferenceText: () => resolved,
           };
         }
         return null;
       };
 
       const markdown = node.getMarkdownContent({ labelResolver: resolver });
-      expect(markdown).toContain("[Figure 1](#fig-1)");
-      expect(markdown).toContain("[Figure 2](#fig-2)");
+      expect(markdown).toContain("[Figure 1](#fig:1)");
+      expect(markdown).toContain("[Figure 2](#fig:2)");
     });
 
     it("should fallback to label if resolver returns null", () => {
@@ -204,29 +202,10 @@ describe("ReferenceTokenNode", () => {
 
       const resolver = () => ({
         getReferenceText: () => "Section 1",
-        getAnchorId: () => null,
       });
 
       const markdown = node.getMarkdownContent({ labelResolver: resolver });
       expect(markdown).toBe("[Section 1](#sec:intro)");
-    });
-
-    it("should handle partial resolution (only anchor ID)", () => {
-      const token = {
-        type: TokenType.REF,
-        content: ["sec:intro"],
-      };
-      const node = factory.createNode(token) as ReferenceTokenNode;
-
-      expect(node).toBeDefined();
-
-      const resolver = () => ({
-        getReferenceText: () => null,
-        getAnchorId: () => "section-introduction",
-      });
-
-      const markdown = node.getMarkdownContent({ labelResolver: resolver });
-      expect(markdown).toBe("[sec:intro](#section-introduction)");
     });
   });
 
@@ -242,7 +221,6 @@ describe("ReferenceTokenNode", () => {
 
       const resolver = (label: string) => ({
         getReferenceText: () => "Figure 1",
-        getAnchorId: () => "fig-1",
       });
 
       const copy = node.getCopyContent({ labelResolver: resolver });
@@ -277,7 +255,6 @@ describe("ReferenceTokenNode", () => {
         };
         return {
           getReferenceText: () => mapping[label],
-          getAnchorId: () => null,
         };
       };
 

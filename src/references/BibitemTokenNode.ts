@@ -164,10 +164,6 @@ export class BibitemTokenNode extends AbstractTokenNode {
     return this.getContentStr();
   }
 
-  getAnchorId(): string | null {
-    return `bib-${this.key}`;
-  }
-
   getMarkdownContent(options?: MarkdownExportOptions): string {
     const contentStr = this.getContentStr();
 

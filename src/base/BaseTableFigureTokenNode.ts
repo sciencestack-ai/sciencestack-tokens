@@ -57,21 +57,6 @@ export abstract class BaseTableFigureTokenNode extends BaseTokenNode {
     return null;
   }
 
-  getAnchorId() {
-    const anchorId = super.getAnchorId();
-    if (anchorId) {
-      return anchorId;
-    }
-
-    const prefix = this.getLabelPrefix();
-    if (this.numbering) {
-      return `${prefix}-${this.numbering}`;
-    }
-    if (this.labels.length > 0) {
-      return `${prefix}-${this.labels[0]}`;
-    }
-    return `${prefix}-${this.id}`;
-  }
 
   getCopyContent(options?: CopyContentOptions): string {
     const envName = this.getEnvironmentName();

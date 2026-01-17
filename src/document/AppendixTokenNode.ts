@@ -22,12 +22,4 @@ export class AppendixTokenNode extends BaseTokenNode {
     const content = super.getMarkdownContent(options);
     return `# Appendix\n\n${content}`;
   }
-
-  getAnchorId(): string {
-    const anchorId = super.getAnchorId();
-    if (anchorId) {
-      return anchorId;
-    }
-    return `appendix`;
-  }
 }

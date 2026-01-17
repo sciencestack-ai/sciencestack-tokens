@@ -23,7 +23,6 @@ export type BaseExportOptions = {
   labelResolver?: (label: string) =>
     | {
         getReferenceText?: () => string | null;
-        getAnchorId?: () => string | null;
       }
     | null
     | undefined;

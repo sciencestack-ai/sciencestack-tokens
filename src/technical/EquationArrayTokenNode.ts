@@ -164,10 +164,6 @@ export class EqArrayRowNode extends AbstractTokenNode {
     return this.token.content.length;
   }
 
-  getAnchorId(): string | null {
-    return this.token.anchorId ?? null;
-  }
-
   public isAllText(): boolean {
     return this.getData().every((column) =>
       column.every((node) => node instanceof TextTokenNode)

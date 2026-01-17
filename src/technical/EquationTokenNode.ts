@@ -64,16 +64,6 @@ export class EquationTokenNode extends BaseTokenNode {
     return this.getLatexContent();
   }
 
-  // getAnchorId() {
-  //   if (this.numbering) {
-  //     return `eq-${this.numbering}`;
-  //   }
-  //   if (this.labels.length > 0) {
-  //     return `eq-${this.labels[0]}`;
-  //   }
-  //   return `eq-${this.id}`;
-  // }
-
   getReferenceText(): string | null {
     return this.numbering ? `(${this.numbering})` : null;
   }

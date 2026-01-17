@@ -203,9 +203,8 @@ describe("SectionTokenNode", () => {
       // postProcess is applied at the collection level
       const markdown = SectionTokenNode.GetMarkdownContent([node], {
         postProcess: (n, md) => {
-          const anchorId = n.getAnchorId?.();
-          if (anchorId) {
-            return `<a id="${anchorId}"></a>\n\n${md}`;
+          if (n.labels.length > 0) {
+            return `<a id="${n.labels[0]}"></a>\n\n${md}`;
           }
           return md;
         }
@@ -238,21 +237,6 @@ describe("SectionTokenNode", () => {
 
       expect(node).toBeDefined();
       expect(node.getReferenceText()).toBeNull();
-    });
-  });
-
-  describe("Anchor ID", () => {
-    it("should generate anchor ID with sec prefix", () => {
-      const token = {
-        type: TokenType.SECTION,
-        level: 1,
-        content: [],
-        labels: ["intro"],
-      };
-      const node = factory.createNode(token) as SectionTokenNode;
-
-      const anchorId = node.getAnchorId();
-      expect(anchorId).toContain("sec-");
     });
   });
 

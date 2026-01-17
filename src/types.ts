@@ -78,7 +78,6 @@ export interface IToken {
 
 export interface BaseToken extends IToken {
   content: string | BaseToken[] | null;
-  anchorId?: string;
 }
 
 interface ContainerToken extends BaseToken {
@@ -156,7 +155,6 @@ export interface RowToken extends IToken {
   type: TokenType.ROW;
   content: BaseToken[][]; // column x tokens per column
   numbering?: string;
-  anchorId?: string;
 }
 
 export interface EquationArrayToken extends IToken {
