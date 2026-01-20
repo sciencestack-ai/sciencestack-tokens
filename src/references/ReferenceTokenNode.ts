@@ -83,13 +83,11 @@ export class ReferenceTokenNode extends AbstractTokenNode {
         let referenceText = label;
 
         // Use optional label resolver if provided
-        if (options?.labelResolver) {
-          const resolvedToken = options.labelResolver(label);
-          if (resolvedToken) {
-            const refText = resolvedToken.getReferenceText?.();
-            if (refText) {
-              referenceText = refText;
-            }
+        const resolvedToken = options?.labelResolver?.(label);
+        if (resolvedToken) {
+          const refText = resolvedToken.getReferenceText?.();
+          if (refText) {
+            referenceText = refText;
           }
         }
 
@@ -97,7 +95,8 @@ export class ReferenceTokenNode extends AbstractTokenNode {
           // don't add #label inside math since it will break math renderers like katex
           return `[\\text{Ref ${referenceText}}]`;
         }
-        return `[${referenceText}](#${label})`;
+        const anchorId = resolvedToken?.id ?? label;
+        return `[${referenceText}](#${anchorId})`;
       })
       .join(", ");
   }

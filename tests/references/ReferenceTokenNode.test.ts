@@ -207,6 +207,99 @@ describe("ReferenceTokenNode", () => {
       const markdown = node.getMarkdownContent({ labelResolver: resolver });
       expect(markdown).toBe("[Section 1](#sec:intro)");
     });
+
+    it("should use id for anchor href when provided", () => {
+      const token = {
+        type: TokenType.REF,
+        content: ["fig:example"],
+      };
+      const node = factory.createNode(token) as ReferenceTokenNode;
+
+      expect(node).toBeDefined();
+
+      const resolver = (label: string) => {
+        if (label === "fig:example") {
+          return {
+            id: "sec:5",
+            getReferenceText: () => "sec:5",
+          };
+        }
+        return null;
+      };
+
+      const markdown = node.getMarkdownContent({ labelResolver: resolver });
+      expect(markdown).toBe("[sec:5](#sec:5)");
+    });
+
+    it("should use id for anchor href with different display text", () => {
+      const token = {
+        type: TokenType.REF,
+        content: ["fig:example"],
+      };
+      const node = factory.createNode(token) as ReferenceTokenNode;
+
+      expect(node).toBeDefined();
+
+      const resolver = (label: string) => {
+        if (label === "fig:example") {
+          return {
+            id: "node-123",
+            getReferenceText: () => "Figure 1",
+          };
+        }
+        return null;
+      };
+
+      const markdown = node.getMarkdownContent({ labelResolver: resolver });
+      expect(markdown).toBe("[Figure 1](#node-123)");
+    });
+
+    it("should handle multiple references with id in resolver", () => {
+      const token = {
+        type: TokenType.REF,
+        content: ["fig:1", "fig:2"],
+      };
+      const node = factory.createNode(token) as ReferenceTokenNode;
+
+      expect(node).toBeDefined();
+
+      const labelMap: Record<string, string> = {
+        "fig:1": "node-1",
+        "fig:2": "node-2",
+      };
+
+      const resolver = (label: string) => {
+        const nodeId = labelMap[label];
+        if (!nodeId) return null;
+        return {
+          id: nodeId,
+          getReferenceText: () => nodeId,
+        };
+      };
+
+      const markdown = node.getMarkdownContent({ labelResolver: resolver });
+      expect(markdown).toContain("[node-1](#node-1)");
+      expect(markdown).toContain("[node-2](#node-2)");
+    });
+
+    it("should fallback to label for href when id is not provided", () => {
+      const token = {
+        type: TokenType.REF,
+        content: ["fig:example"],
+      };
+      const node = factory.createNode(token) as ReferenceTokenNode;
+
+      expect(node).toBeDefined();
+
+      // Resolver returns getReferenceText but no id
+      const resolver = () => ({
+        getReferenceText: () => "Figure 1",
+      });
+
+      const markdown = node.getMarkdownContent({ labelResolver: resolver });
+      // Display text is "Figure 1", but href falls back to label
+      expect(markdown).toBe("[Figure 1](#fig:example)");
+    });
   });
 
   describe("Copy content with labelResolver", () => {

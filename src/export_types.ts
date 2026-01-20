@@ -22,6 +22,7 @@ export type BaseExportOptions = {
   /** Optional resolver to look up token nodes by label for cross-references */
   labelResolver?: (label: string) =>
     | {
+        id?: string;
         getReferenceText?: () => string | null;
       }
     | null
