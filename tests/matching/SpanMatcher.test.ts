@@ -4,6 +4,8 @@ import {
   SpanInfo,
   LatexNormalizer,
   MarkdownNormalizer,
+  createLatexNormalizer,
+  createMarkdownNormalizer,
 } from "../../src/matching";
 import { TokenExporter } from "../../src/TokenExporter";
 import { TokenNodeFactory } from "../../src/base/TokenNodeFactory";
@@ -250,7 +252,8 @@ describe("LatexNormalizer", () => {
     const text = "Hello % this is a comment\nWorld";
     const result = LatexNormalizer.normalize(text);
 
-    expect(result.normalized).toBe("Hello \nWorld");
+    // Newlines are normalized to spaces
+    expect(result.normalized).toBe("Hello World");
   });
 
   it("should not strip escaped percent signs", () => {
@@ -299,6 +302,65 @@ describe("LatexNormalizer", () => {
 
     expect(results.length).toBeGreaterThan(0);
   });
+
+  it("should match when source has newlines and excerpt has spaces", () => {
+    const spans = new Map<string, SpanInfo>([
+      ["node-1", { start: 0, end: 50, type: "section" }],
+    ]);
+    // Source has newlines
+    const fullText = "gives\n\\begin{equation}\nH(t)-\\tilde{H}(t)";
+
+    const matcher = new SpanMatcher(spans, fullText, LatexNormalizer);
+
+    // LLM excerpt has spaces where source has newlines
+    const results = matcher.matchExcerpt("gives \\begin{equation} H(t)", {
+      useNormalization: true,
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+  });
+
+  it("should normalize tabs and mixed whitespace", () => {
+    const text = "Hello\t\t  \n\n  World";
+    const result = LatexNormalizer.normalize(text);
+
+    expect(result.normalized).toBe("Hello World");
+  });
+});
+
+describe("createLatexNormalizer with stripAllWhitespace", () => {
+  it("should strip all whitespace when option is set", () => {
+    const normalizer = createLatexNormalizer({ stripAllWhitespace: true });
+    const text = "Hello World";
+    const result = normalizer.normalize(text);
+
+    expect(result.normalized).toBe("HelloWorld");
+  });
+
+  it("should match despite whitespace differences", () => {
+    const normalizer = createLatexNormalizer({ stripAllWhitespace: true });
+    const spans = new Map<string, SpanInfo>([
+      ["node-1", { start: 0, end: 20, type: "text" }],
+    ]);
+    const fullText = "a   b  c";
+
+    const matcher = new SpanMatcher(spans, fullText, normalizer);
+
+    // "abc" should match "a   b  c" with aggressive normalization
+    const results = matcher.matchExcerpt("abc", {
+      useNormalization: true,
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+  });
+
+  it("should handle complex LaTeX with aggressive whitespace stripping", () => {
+    const normalizer = createLatexNormalizer({ stripAllWhitespace: true });
+    const text = "\\section{Intro}\\label{sec:1}\n\n  Text  here";
+    const result = normalizer.normalize(text);
+
+    expect(result.normalized).toBe("\\section{Intro}Texthere");
+  });
 });
 
 describe("MarkdownNormalizer", () => {
@@ -336,11 +398,12 @@ describe("MarkdownNormalizer", () => {
     expect(result.normalized).toBe("Hello World");
   });
 
-  it("should normalize excessive newlines", () => {
+  it("should normalize all whitespace to single space", () => {
     const text = "Hello\n\n\n\nWorld";
     const result = MarkdownNormalizer.normalize(text);
 
-    expect(result.normalized).toBe("Hello\n\nWorld");
+    // All whitespace (including newlines) normalized to single space
+    expect(result.normalized).toBe("Hello World");
   });
 
   it("should work with SpanMatcher for normalized matching", () => {
@@ -353,6 +416,47 @@ describe("MarkdownNormalizer", () => {
 
     // Match across the comment (spaces normalized to single)
     const results = matcher.matchExcerpt("Hello World", {
+      useNormalization: true,
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+  });
+
+  it("should match when source has newlines and excerpt has spaces", () => {
+    const spans = new Map<string, SpanInfo>([
+      ["node-1", { start: 0, end: 30, type: "section" }],
+    ]);
+    const fullText = "Hello\nWorld\nTest";
+
+    const matcher = new SpanMatcher(spans, fullText, MarkdownNormalizer);
+
+    const results = matcher.matchExcerpt("Hello World Test", {
+      useNormalization: true,
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+  });
+});
+
+describe("createMarkdownNormalizer with stripAllWhitespace", () => {
+  it("should strip all whitespace when option is set", () => {
+    const normalizer = createMarkdownNormalizer({ stripAllWhitespace: true });
+    const text = "Hello World";
+    const result = normalizer.normalize(text);
+
+    expect(result.normalized).toBe("HelloWorld");
+  });
+
+  it("should match despite whitespace differences", () => {
+    const normalizer = createMarkdownNormalizer({ stripAllWhitespace: true });
+    const spans = new Map<string, SpanInfo>([
+      ["node-1", { start: 0, end: 20, type: "text" }],
+    ]);
+    const fullText = "a   b\n\nc";
+
+    const matcher = new SpanMatcher(spans, fullText, normalizer);
+
+    const results = matcher.matchExcerpt("abc", {
       useNormalization: true,
     });
 

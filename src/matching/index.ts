@@ -10,5 +10,6 @@ export {
   NormalizationResult,
 } from './SpanMatcher';
 
-export { LatexNormalizer } from './LatexNormalizer';
-export { MarkdownNormalizer } from './MarkdownNormalizer';
+export { LatexNormalizer, createLatexNormalizer } from './LatexNormalizer';
+export { MarkdownNormalizer, createMarkdownNormalizer } from './MarkdownNormalizer';
+export { NormalizerOptions } from './normalizeWhitespace';
