@@ -91,3 +91,14 @@ export { processTokenNodes } from "./tokenProcessing";
 
 // Exporter
 export { TokenExporter, ExportFormat, ExportOptions } from "./TokenExporter";
+
+// Matching utilities
+export {
+  SpanMatcher,
+  SpanInfo,
+  MatchResult,
+  TextNormalizer,
+  NormalizationResult,
+  LatexNormalizer,
+  MarkdownNormalizer,
+} from "./matching";
