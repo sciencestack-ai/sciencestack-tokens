@@ -101,4 +101,4 @@ export {
   NormalizationResult,
   LatexNormalizer,
   MarkdownNormalizer,
-} from "./matching";
+} from "./matching/index";
