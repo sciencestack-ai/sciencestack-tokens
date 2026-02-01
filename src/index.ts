@@ -104,4 +104,11 @@ export {
   createLatexNormalizer,
   createMarkdownNormalizer,
   NormalizerOptions,
+  // Fuzzy matching
+  normalizeForComparison,
+  similarity,
+  buildPositionMap,
+  findFuzzyMatch,
+  filterToLeafRange,
+  matchExcerptWithFallback,
 } from "./matching/index";
