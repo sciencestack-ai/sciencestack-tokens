@@ -57,6 +57,22 @@ export enum TokenType {
   AUTHOR = "author",
 }
 
+/**
+ * Token types that contain actual content (not containers).
+ * Useful for filtering to meaningful text nodes.
+ */
+export const LEAF_TOKEN_TYPES: Set<string> = new Set([
+  TokenType.TEXT,
+  TokenType.EQUATION,
+  TokenType.EQUATION_ARRAY,
+  TokenType.CODE,
+  TokenType.COMMAND,
+  TokenType.REF,
+  TokenType.CITATION,
+  TokenType.URL,
+  TokenType.FOOTNOTE,
+]);
+
 export enum DisplayType {
   INLINE = "inline",
   BLOCK = "block",

@@ -13,3 +13,13 @@ export {
 export { LatexNormalizer, createLatexNormalizer } from './LatexNormalizer';
 export { MarkdownNormalizer, createMarkdownNormalizer } from './MarkdownNormalizer';
 export { NormalizerOptions } from './normalizeWhitespace';
+
+// Fuzzy matching utilities
+export {
+  normalizeForComparison,
+  similarity,
+  buildPositionMap,
+  findFuzzyMatch,
+  filterToLeafRange,
+  matchExcerptWithFallback,
+} from './fuzzyMatching';
